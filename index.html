@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusAnchor ⚓</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- מסך 1: הגדרות ראשוניות -->
+    <section id="screen-onboarding" class="screen active">
+        <h1>ברוך הבא ל-FocusAnchor</h1>
+        <p>איך תרצה שהעוגן שלך יפנה אליך ברגעי קושי?</p>
+        
+        <!-- תיבת קלט לשם משתמש -->
+        <div class="input-group">
+            <label for="username-input">השם שלך:</label>
+            <input type="text" id="username-input" placeholder="הכנס שם...">
+        </div>
+
+        <!-- כפתורי בחירת פרסונה -->
+        <div class="persona-selector">
+            <button class="btn-persona" data-persona="commander">סמכותי (ישיר ומניע)</button>
+            <button class="btn-persona" data-persona="empathetic">חבר (מכיל ומקשיב)</button>
+            <button class="btn-persona" data-persona="analytical">חוקר (מבוסס נתונים)</button>
+        </div>
+
+        <button id="start-btn">הפעל עוגן</button>
+    </section>
+
+    <!-- מסך 2: התערבות וקרקוע חושי -->
+    <section id="screen-intervention" class="screen">
+        <!-- הטקסטים שיוזרקו דינמית לפי הפרסונה שנבחרה -->
+        <h2 id="intervention-title"></h2>
+        <p id="intervention-desc"></p>
+        
+        <!-- עוגן המגע (העיגול המרכזי) -->
+        <div class="anchor-container">
+            <button id="touch-anchor">
+                <span id="countdown-timer">5</span>
+            </button>
+        </div>
+        
+        <p class="hint-text">החזק את האצבע על העוגן </p>
+    </section>
+    <!-- מסך 3: הנעה לפעולה מיקרוסקופית -->
+    <section id="screen-action" class="screen">
+        <h2>העוגן ננעל. מה הצעד המיקרוסקופי הבא?</h2>
+        <p>אל תחשוב על כל המשימה. תבחר פעולה אחת קטנה שתיקח פחות מ-2 דקות.</p>
+        
+        <div class="action-suggestions">
+            <p><strong>דוגמאות לפעולות מיקרוסקופיות:</strong></p>
+            <ul>
+                <li>לפתוח קובץ ריק ולכתוב שורה אחת.</li>
+                <li>לקרוא רק פסקה אחת בספר.</li>
+                <li>לשטוף כוס אחת שנמצאת בכיור.</li>
+            </ul>
+        </div>
+
+        <button id="reset-btn">סיימתי, תודה</button>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
