@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,57 +8,58 @@
 </head>
 <body>
 
-    <!-- מסך 1: הגדרות ראשוניות -->
+    <!-- Screen 1: onboarding -->
     <section id="screen-onboarding" class="screen active">
-        <h1>ברוך הבא ל-FocusAnchor</h1>
-        <p>איך תרצה שהעוגן שלך יפנה אליך ברגעי קושי?</p>
-        
-        <!-- תיבת קלט לשם משתמש -->
+        <h1>Welcome to FocusAnchor</h1>
+        <p>How would you like your anchor to address you in difficult moments?</p>
+
+        <!-- Username input -->
         <div class="input-group">
-            <label for="username-input">השם שלך:</label>
-            <input type="text" id="username-input" placeholder="הכנס שם...">
+            <label for="username-input">Your name:</label>
+            <input type="text" id="username-input" placeholder="Enter your name...">
         </div>
 
-        <!-- כפתורי בחירת פרסונה -->
+        <!-- Persona selection buttons -->
         <div class="persona-selector">
-            <button class="btn-persona" data-persona="commander">סמכותי (ישיר ומניע)</button>
-            <button class="btn-persona" data-persona="empathetic">חבר (מכיל ומקשיב)</button>
-            <button class="btn-persona" data-persona="analytical">חוקר (מבוסס נתונים)</button>
+            <button class="btn-persona" data-persona="commander">Commander (direct and motivating)</button>
+            <button class="btn-persona" data-persona="empathetic">Friend (supportive and understanding)</button>
+            <button class="btn-persona" data-persona="analytical">Researcher (data-driven)</button>
         </div>
 
-        <button id="start-btn">הפעל עוגן</button>
+        <button id="start-btn">Activate Anchor</button>
     </section>
 
-    <!-- מסך 2: התערבות וקרקוע חושי -->
+    <!-- Screen 2: intervention and sensory grounding -->
     <section id="screen-intervention" class="screen">
-        <!-- הטקסטים שיוזרקו דינמית לפי הפרסונה שנבחרה -->
+        <!-- Text injected dynamically based on the selected persona -->
         <h2 id="intervention-title"></h2>
         <p id="intervention-desc"></p>
-        
-        <!-- עוגן המגע (העיגול המרכזי) -->
+
+        <!-- Touch anchor (the central circle) -->
         <div class="anchor-container">
             <button id="touch-anchor">
                 <span id="countdown-timer">5</span>
             </button>
         </div>
-        
-        <p class="hint-text">החזק את האצבע על העוגן </p>
+
+        <p class="hint-text">Hold your finger on the anchor</p>
     </section>
-    <!-- מסך 3: הנעה לפעולה מיקרוסקופית -->
+
+    <!-- Screen 3: micro-action prompt -->
     <section id="screen-action" class="screen">
-        <h2>העוגן ננעל. מה הצעד המיקרוסקופי הבא?</h2>
-        <p>אל תחשוב על כל המשימה. תבחר פעולה אחת קטנה שתיקח פחות מ-2 דקות.</p>
-        
+        <h2>Anchor locked. What's the next micro-step?</h2>
+        <p>Don't think about the whole task. Pick one small action that takes less than 2 minutes.</p>
+
         <div class="action-suggestions">
-            <p><strong>דוגמאות לפעולות מיקרוסקופיות:</strong></p>
+            <p><strong>Examples of micro-actions:</strong></p>
             <ul>
-                <li>לפתוח קובץ ריק ולכתוב שורה אחת.</li>
-                <li>לקרוא רק פסקה אחת בספר.</li>
-                <li>לשטוף כוס אחת שנמצאת בכיור.</li>
+                <li>Open an empty file and write a single line.</li>
+                <li>Read just one paragraph of the book.</li>
+                <li>Wash one cup that's in the sink.</li>
             </ul>
         </div>
 
-        <button id="reset-btn">סיימתי, תודה</button>
+        <button id="reset-btn">Done, thanks</button>
     </section>
 
     <script src="app.js"></script>

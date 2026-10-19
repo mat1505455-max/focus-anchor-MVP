@@ -1,0 +1,254 @@
+/* ==========================================
+   1. DESIGN TOKENS & RESET
+   ========================================== */
+:root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-hover: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-strong: #0ea5e9;
+    --accent-glow: rgba(56, 189, 248, 0.45);
+    --radius: 14px;
+    --anchor-size: 200px;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Heebo", Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2 {
+    margin: 0 0 0.75rem;
+    line-height: 1.25;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.5rem; }
+
+p {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================
+   2. SCREENS
+   ========================================== */
+.screen {
+    display: none;
+    min-height: 100dvh;
+    padding: 2rem 1.25rem;
+    max-width: 480px;
+    margin: 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.screen.active {
+    display: flex;
+    animation: screen-in 0.3s ease-out;
+}
+
+@keyframes screen-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   3. BUTTONS & INPUTS
+   ========================================== */
+button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border: none;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+    text-align: start;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    font: inherit;
+    font-size: 1rem; /* 16px+ prevents iOS zoom on focus */
+    color: var(--text);
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+}
+
+.input-group input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.persona-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-persona {
+    min-height: 56px;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.btn-persona:active {
+    transform: scale(0.98);
+}
+
+.btn-persona.selected {
+    background: var(--surface-hover);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+#start-btn,
+#reset-btn {
+    min-height: 56px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #06202e;
+    background: var(--accent);
+    border-radius: var(--radius);
+    transition: background 0.15s, transform 0.1s;
+}
+
+#start-btn:active,
+#reset-btn:active {
+    background: var(--accent-strong);
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   4. ANCHOR (screen 2)
+   ========================================== */
+.anchor-container {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+#touch-anchor {
+    position: relative;
+    width: var(--anchor-size);
+    height: var(--anchor-size);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-strong));
+    box-shadow: 0 0 0 0 var(--accent-glow);
+    animation: pulse 2s ease-out infinite;
+    transition: transform 0.15s ease-out;
+    /* Keep the hold gesture from triggering scroll, zoom, text selection or the long-press menu */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+#touch-anchor:active {
+    transform: scale(0.94);
+    animation-play-state: paused;
+    box-shadow: 0 0 0 18px var(--accent-glow);
+}
+
+#countdown-timer {
+    font-size: 4.5rem;
+    font-weight: 800;
+    color: #06202e;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 var(--accent-glow); }
+    70%  { box-shadow: 0 0 0 36px rgba(56, 189, 248, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+.hint-text {
+    font-size: 0.95rem;
+}
+
+/* ==========================================
+   5. ACTION SCREEN (screen 3)
+   ========================================== */
+.action-suggestions {
+    margin: 0 0 1.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    text-align: start;
+}
+
+.action-suggestions p {
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.action-suggestions ul {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    color: var(--text-muted);
+}
+
+.action-suggestions li + li {
+    margin-top: 0.4rem;
+}
+
+/* ==========================================
+   6. ACCESSIBILITY & SMALL SCREENS
+   ========================================== */
+@media (max-width: 360px) {
+    :root { --anchor-size: 170px; }
+    h1 { font-size: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
