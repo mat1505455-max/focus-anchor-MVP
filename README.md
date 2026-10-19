@@ -1,23 +1,22 @@
 # FocusAnchor (MVP) ⚓
 
-אפליקציית התערבות חושית (Bottom-Up) לשבירת לולאות דופמין, דחיינות וקיפאון (Freeze Mode) בזמן למידה.
+A bottom-up sensory intervention app that breaks dopamine loops, procrastination, and freeze responses during study sessions.
 
-## 🎯 מטרת ה-MVP
-לייצר אב-טיפוס רזה (Web App למובייל) שמאפשר למשתמש לבחור פרופיל פנייה מותאם אישית, 
-ולספק לו עוגן פיזיולוגי של 5 שניות (מגע, רטט וויזואליות) כדי לקטוע דחיינות בזמן אמת.
+## 🎯 MVP Goal
+Build a lean mobile-first web app prototype that lets the user pick a tailored address persona and delivers a 5-second physiological anchor (touch, vibration, and visual feedback) to interrupt procrastination in real time.
 
-## 📱 ה-Flow של האפליקציה (3 מסכים)
-1. **מסך הגדרות (Onboarding):** בחירת פרסונת פנייה (מפקד/חבר/חוקר).
-2. **מסך התערבות (Intervention):** הצגת הטקסט המותאם ועיגול "עוגן" להצבת האצבע.
-3. **מסך קרקוע (Grounding):** החזקה של 5 שניות עם רטט (Haptic Feedback) וספירה לאחור, המובילה לכפתור הנעה למיקרו-משימה.
+## 📱 App Flow (3 Screens)
+1. **Onboarding:** The user selects an address persona (Commander / Friend / Explorer). The choice is persisted in `localStorage`.
+2. **Intervention:** Displays persona-specific copy and a circular "anchor" target where the user places a finger.
+3. **Grounding:** The user holds the anchor for 5 seconds while a countdown runs and haptic feedback fires (Vibration API). On completion, a CTA button launches a micro-task.
 
-## 🛠️ סטאק טכנולוגי
-- HTML5 (מבנה נקי)
-- CSS3 (אנימציית Pulse, עיצוב מותאם למובייל)
-- Vanilla JavaScript (ניהול ה-State ושימוש ב-Vibration API)
+## 🛠️ Tech Stack
+- HTML5 (semantic, minimal markup)
+- CSS3 (pulse keyframe animation, mobile-first responsive layout)
+- Vanilla JavaScript (screen state management, Web Vibration API)
 
-## 🚀 שלבי פיתוח מוגדרים (Tranche 1)
-- [ ] עיצוב המסכים ב-CSS והתאמה למובייל.
-- [ ] מימוש לוגיקת החלפת המסכים ושמירת הפרופיל ב-localStorage.
-- [ ] שילוב הטיימר והרכיב החושי (Web Vibration API).
-- [ ] בדיקת בטא ראשונית עם חברים בשטח.
+## 🚀 Development Roadmap (Tranche 1)
+- [ ] Style the three screens in CSS and make them mobile-responsive.
+- [ ] Implement screen-switching logic and persist the selected persona in `localStorage`.
+- [ ] Integrate the countdown timer and haptic feedback (Web Vibration API).
+- [ ] Run an initial beta test with friends in real-world conditions.
