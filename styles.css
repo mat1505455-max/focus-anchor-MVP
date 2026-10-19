@@ -143,6 +143,22 @@ input:focus-visible {
     box-shadow: 0 0 0 4px var(--accent-glow);
 }
 
+.link-btn {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    text-decoration: underline;
+}
+
+.field-error {
+    margin: 0.5rem 0 0;
+    font-size: 0.9rem;
+    color: #fca5a5;
+}
+
+#welcome-next-btn,
 #start-btn,
 #reset-btn {
     min-height: 56px;
@@ -155,6 +171,11 @@ input:focus-visible {
     transition: background 0.15s, transform 0.1s;
 }
 
+#welcome-next-btn {
+    width: 100%;
+}
+
+#welcome-next-btn:active,
 #start-btn:active,
 #reset-btn:active {
     background: var(--accent-strong);

@@ -213,18 +213,56 @@ function completeGrounding() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Screen 1: persona selection
+    // Screen 1: welcome + name
+    const welcomeForm = document.getElementById('welcome-form');
+    const nameInput = document.getElementById('username-input');
+    const nameError = document.getElementById('name-error');
+
+    // Prefill the saved name, if any
+    const savedName = readStorage(STORAGE_KEYS.name);
+    if (savedName && nameInput) nameInput.value = savedName;
+
+    // Returning user: skip the welcome screen and go straight to persona selection
+    if (savedName) navigateTo('screen-onboarding');
+
+    // Let the user go back and change the saved name
+    const changeNameBtn = document.getElementById('change-name-btn');
+    if (changeNameBtn) {
+        changeNameBtn.addEventListener('click', () => {
+            navigateTo('screen-welcome');
+            if (nameInput) nameInput.focus();
+        });
+    }
+
+    if (nameInput && nameError) {
+        nameInput.addEventListener('input', () => { nameError.hidden = true; });
+    }
+
+    if (welcomeForm) {
+        // A form submit covers both the button tap and the Enter/Go key on mobile keyboards
+        welcomeForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value.trim();
+
+            if (name === '') {
+                nameError.hidden = false;
+                nameInput.focus();
+                return;
+            }
+
+            userName = name;
+            writeStorage(STORAGE_KEYS.name, userName);
+            navigateTo('screen-onboarding');
+        });
+    }
+
+    // Screen 2: persona selection
     const personaButtons = document.querySelectorAll('.btn-persona');
 
     // Reflect the restored/default persona in the UI
     personaButtons.forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.persona === appState.currentPersona);
     });
-
-    // Prefill the saved name, if any
-    const savedName = readStorage(STORAGE_KEYS.name);
-    const nameInput = document.getElementById('username-input');
-    if (savedName && nameInput) nameInput.value = savedName;
 
     personaButtons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -246,14 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
-            const inputEl = document.getElementById('username-input');
-
-            // If the user typed a name, update the global variable and persist it in the browser
-            if (inputEl && inputEl.value.trim() !== "") {
-                userName = inputEl.value.trim();
-                writeStorage(STORAGE_KEYS.name, userName);
-            }
-
             // This click is a user gesture, so it can unlock audio for the hold on the next screen
             unlockAudio();
 

@@ -8,16 +8,25 @@
 </head>
 <body>
 
-    <!-- Screen 1: onboarding -->
-    <section id="screen-onboarding" class="screen active">
-        <h1>Welcome to FocusAnchor</h1>
-        <p>How would you like your anchor to address you in difficult moments?</p>
+    <!-- Screen 1: welcome and name -->
+    <section id="screen-welcome" class="screen active">
+        <h1>Welcome to FocusAnchor ⚓</h1>
+        <p>A 5-second physical anchor to break the scroll and get you moving again.</p>
 
-        <!-- Username input -->
-        <div class="input-group">
-            <label for="username-input">Your name:</label>
-            <input type="text" id="username-input" placeholder="Enter your name...">
-        </div>
+        <form id="welcome-form" novalidate>
+            <div class="input-group">
+                <label for="username-input">What should we call you?</label>
+                <input type="text" id="username-input" placeholder="Enter your name..." maxlength="30" autocomplete="given-name" aria-describedby="name-error">
+                <p id="name-error" class="field-error" role="alert" hidden>Please enter your name to continue.</p>
+            </div>
+            <button type="submit" id="welcome-next-btn">Continue</button>
+        </form>
+    </section>
+
+    <!-- Screen 2: persona selection -->
+    <section id="screen-onboarding" class="screen">
+        <h1>Choose your anchor</h1>
+        <p>How would you like your anchor to address you in difficult moments?</p>
 
         <!-- Persona selection buttons -->
         <div class="persona-selector">
@@ -27,9 +36,10 @@
         </div>
 
         <button id="start-btn">Activate Anchor</button>
+        <button type="button" id="change-name-btn" class="link-btn">Change name</button>
     </section>
 
-    <!-- Screen 2: intervention and sensory grounding -->
+    <!-- Screen 3: intervention and sensory grounding -->
     <section id="screen-intervention" class="screen">
         <!-- Text injected dynamically based on the selected persona -->
         <h2 id="intervention-title"></h2>
@@ -50,7 +60,7 @@
         <p class="hint-text">Hold your finger on the anchor</p>
     </section>
 
-    <!-- Screen 3: micro-action prompt -->
+    <!-- Screen 4: micro-action prompt -->
     <section id="screen-action" class="screen">
         <h2>Anchor locked. What's the next micro-step?</h2>
         <p>Don't think about the whole task. Pick one small action that takes less than 2 minutes.</p>
