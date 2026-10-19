@@ -81,56 +81,128 @@ function loadInterventionText() {
 // 3. CORE GROUNDING LOGIC (Haptic & Timer)
 // ==========================================
 
+const HOLD_SECONDS = 5;
+const HINT_DEFAULT = 'Hold your finger on the anchor';
+const HINT_TOO_EARLY = 'Released too early. Press and hold again.';
+
+// --- Feedback layer -------------------------------------------------------
+// Vibration is unsupported on iOS Safari, so every tick also gets a visual
+// beat and a short sound. Vibration is a bonus where available.
+
+let audioCtx = null;
+
+// Must be called from a user gesture (iOS keeps audio locked until then)
+function unlockAudio() {
+    try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { /* audio is optional */ }
+}
+
+function playTone(frequency, durationSec) {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+        osc.frequency.value = frequency;
+        // Quick fade in/out avoids clicks
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + durationSec + 0.05);
+    } catch (e) { /* audio is optional */ }
+}
+
+function buzz(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function beatAnchor() {
+    const anchor = document.getElementById('touch-anchor');
+    if (!anchor) return;
+    anchor.classList.remove('beat');
+    void anchor.offsetWidth; // force reflow so the animation restarts
+    anchor.classList.add('beat');
+}
+
+function setHint(text) {
+    const hintEl = document.querySelector('.hint-text');
+    if (hintEl) hintEl.textContent = text;
+}
+
+function resetAnchorUI() {
+    const anchor = document.getElementById('touch-anchor');
+    if (anchor) anchor.classList.remove('holding', 'beat');
+    const countdownEl = document.getElementById('countdown-timer');
+    if (countdownEl) countdownEl.textContent = HOLD_SECONDS;
+}
+
+// --- Hold logic -----------------------------------------------------------
+
 function startGrounding() {
     // Guard against double-firing (e.g. touch + emulated mouse events) stacking two timers
     if (appState.timerInterval) return;
 
-    let timeLeft = 5;
+    unlockAudio();
+
+    let timeLeft = HOLD_SECONDS;
     const countdownEl = document.getElementById('countdown-timer');
+    const anchor = document.getElementById('touch-anchor');
 
     if (countdownEl) countdownEl.textContent = timeLeft;
+    setHint(HINT_DEFAULT);
+    if (anchor) anchor.classList.add('holding'); // starts the progress ring
+    beatAnchor();
+    playTone(440, 0.15);
 
     // Initial vibration pulse (bottom-up trigger) marking the start of contact
-    if (navigator.vibrate) {
-        navigator.vibrate([200, 100, 200]);
-    }
+    buzz([200, 100, 200]);
 
     // 5-second countdown
     appState.timerInterval = setInterval(() => {
         timeLeft--;
         if (countdownEl) countdownEl.textContent = timeLeft;
 
-        // Short vibration on every elapsed second for sensory feedback
-        if (navigator.vibrate) {
-            navigator.vibrate(100);
-        }
-
         if (timeLeft <= 0) {
             clearInterval(appState.timerInterval);
             appState.timerInterval = null;
             completeGrounding();
+            return;
         }
+
+        // Per-second feedback: vibration, visual beat and tick sound
+        buzz(100);
+        beatAnchor();
+        playTone(440, 0.1);
     }, 1000);
 }
 
 function stopGrounding() {
+    // Release events also fire after a completed hold; only react to an interrupted one
+    const wasHolding = appState.timerInterval !== null;
+
     // If the user lifts their finger early, reset everything to prevent shortcuts
     clearInterval(appState.timerInterval);
     appState.timerInterval = null;
-    if (navigator.vibrate) {
-        navigator.vibrate(0); // Immediately cancel any active vibration
-    }
+    buzz(0); // Immediately cancel any active vibration
 
-    // Restore the initial display state
-    const countdownEl = document.getElementById('countdown-timer');
-    if (countdownEl) countdownEl.textContent = "5";
+    resetAnchorUI();
+    if (wasHolding) setHint(HINT_TOO_EARLY);
 }
 
 function completeGrounding() {
-    // Strong, noticeable completion feedback (half a second of continuous vibration)
-    if (navigator.vibrate) {
-        navigator.vibrate(500);
-    }
+    // Strong, noticeable completion feedback: long vibration plus a higher chime
+    buzz(500);
+    playTone(660, 0.4);
+
+    resetAnchorUI();
+    setHint(HINT_DEFAULT);
+
     // Move on to the micro-action screen
     navigateTo('screen-action');
 }
@@ -181,6 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 userName = inputEl.value.trim();
                 writeStorage(STORAGE_KEYS.name, userName);
             }
+
+            // This click is a user gesture, so it can unlock audio for the hold on the next screen
+            unlockAudio();
 
             console.log(`User ${userName} continuing to the intervention screen with persona ${appState.currentPersona}`);
 
