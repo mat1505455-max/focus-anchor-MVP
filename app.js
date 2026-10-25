@@ -23,15 +23,15 @@ const savedPersona = readStorage(STORAGE_KEYS.persona);
 
 const getPersonaData = (name) => ({
     commander: {
-        title: `Commander: "${name}, stop scrolling."`,
+        title: `${name}, stop scrolling.`,
         instruction: "Put the phone down, take a breath, and let's get back to work. Move."
     },
     empathetic: {
-        title: `Friend: "Hey ${name}, it's okay."`,
+        title: `Hey ${name}, it's okay.`,
         instruction: "It's completely natural that you escaped here. Let's take a breath together."
     },
     analytical: {
-        title: "Researcher: \"I detected a short-term dopamine loop.\"",
+        title: "I detected a short-term dopamine loop.",
         instruction: "Returning to the exercise now for 3 minutes will break the procrastination chain."
     }
 });
@@ -91,18 +91,36 @@ const HINT_TOO_EARLY = 'Released too early. Press and hold again.';
 
 let audioCtx = null;
 
-// Must be called from a user gesture (iOS keeps audio locked until then)
+// Call from a user gesture (iOS keeps audio locked until then). Safe to call repeatedly:
+// iOS can drop the context into 'interrupted' (not just 'suspended') between holds, so
+// anything that isn't 'running' gets resumed.
 function unlockAudio() {
     try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (!AudioContextClass) return;
         if (!audioCtx) audioCtx = new AudioContextClass();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (audioCtx.state !== 'running') {
+            const resumed = audioCtx.resume();
+            if (resumed && resumed.catch) resumed.catch(() => {});
+        }
     } catch (e) { /* audio is optional */ }
 }
 
 function playTone(frequency, durationSec) {
-    if (!audioCtx || audioCtx.state !== 'running') return;
+    if (!audioCtx) return;
+    // resume() is async, so wait for it instead of silently dropping the tone
+    if (audioCtx.state !== 'running') {
+        try {
+            audioCtx.resume().then(() => {
+                if (audioCtx.state === 'running') playToneNow(frequency, durationSec);
+            }).catch(() => {});
+        } catch (e) { /* audio is optional */ }
+        return;
+    }
+    playToneNow(frequency, durationSec);
+}
+
+function playToneNow(frequency, durationSec) {
     try {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -190,6 +208,9 @@ function stopGrounding() {
     clearInterval(appState.timerInterval);
     appState.timerInterval = null;
     buzz(0); // Immediately cancel any active vibration
+
+    // Releasing a finger counts as a user gesture on iOS (touchstart doesn't), so re-arm audio now
+    unlockAudio();
 
     resetAnchorUI();
     if (wasHolding) setHint(HINT_TOO_EARLY);
