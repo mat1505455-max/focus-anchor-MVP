@@ -17,6 +17,10 @@ let overlayOpen = false;
     setInterval(check, 30000);
     window.addEventListener('pageshow', (e) => { if (e.persisted) check(); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
+    // The background script pings us on single-page-app navigations (history.pushState)
+    chrome.runtime.onMessage.addListener((message) => {
+        if (message && message.type === 'check') check();
+    });
 })();
 
 // Returns the matching blocklist entry, or null. "www.instagram.com" matches "instagram.com".

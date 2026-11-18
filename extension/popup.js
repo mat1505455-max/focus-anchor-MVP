@@ -42,11 +42,24 @@ function renderStats(events) {
     }));
 }
 
+const DOMAIN_RE = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/;
+
+// Returns { domains, rejected }: normalized valid domains, and the entries that weren't domains
 function parseBlocklist(text) {
-    const domains = text.split(/[\s,]+/)
-        .map(s => s.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0])
+    const entries = text.split(/[\s,]+/)
+        .map(s => s.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].split(':')[0])
         .filter(Boolean);
-    return [...new Set(domains)];
+    const unique = [...new Set(entries)];
+    return {
+        domains: unique.filter(d => DOMAIN_RE.test(d)),
+        rejected: unique.filter(d => !DOMAIN_RE.test(d))
+    };
+}
+
+function showStatus(text) {
+    els.saved.textContent = text;
+    els.saved.hidden = false;
+    setTimeout(() => { els.saved.hidden = true; }, 4000);
 }
 
 async function init() {
@@ -62,15 +75,30 @@ async function init() {
 
 els.save.addEventListener('click', async () => {
     const minutes = Math.min(120, Math.max(1, parseInt(els.passMinutes.value, 10) || 10));
+    const { domains, rejected } = parseBlocklist(els.blocklist.value);
+
+    // Ask for access to any site we don't have yet. permissions.request must start inside this
+    // click handler (user gesture), so fire it before any await. The dialog can close this popup,
+    // so the blocklist is saved in parallel; the background script re-syncs on either event.
+    // Already-granted origins resolve silently, so we can request the whole list in one go.
+    const patterns = domains.map(d => `*://*.${d}/*`);
+    const permissionRequest = patterns.length
+        ? chrome.permissions.request({ origins: patterns })
+        : Promise.resolve(true);
+
     await chrome.storage.local.set({
         name: els.name.value.trim(),
         persona: els.persona.value,
         passMinutes: minutes,
-        blocklist: parseBlocklist(els.blocklist.value)
+        blocklist: domains
     });
     els.passMinutes.value = minutes;
-    els.saved.hidden = false;
-    setTimeout(() => { els.saved.hidden = true; }, 1500);
+    els.blocklist.value = domains.join('\n');
+
+    const granted = await permissionRequest.catch(() => false);
+    if (!granted) showStatus('Saved. Permission was not granted for the new site(s), so they stay inactive.');
+    else if (rejected.length) showStatus(`Saved. Skipped invalid entries: ${rejected.join(', ')}`);
+    else showStatus('Saved');
 });
 
 init();
