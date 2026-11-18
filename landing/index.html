@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusAnchor: a cognitive reset for the scroll</title>
+    <meta name="description" content="A 5-second sensory anchor that interrupts the automatic scroll and brings you back to the present. 100% on-device.">
+    <meta name="theme-color" content="#0f172a">
+    <style>
+        :root { --bg:#0f172a; --surface:#1e293b; --border:#334155; --text:#f1f5f9; --muted:#94a3b8; --accent:#38bdf8; --accent-strong:#0ea5e9; }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin:0; background:var(--bg); color:var(--text); font:17px/1.6 system-ui,-apple-system,'Segoe UI',sans-serif; }
+        .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+        header.hero { padding: 4rem 0 3rem; text-align: center; }
+        h1 { margin: 0 0 1rem; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.15; }
+        h2 { margin: 0 0 0.75rem; font-size: 1.5rem; }
+        p { margin: 0 0 1rem; color: var(--muted); }
+        .lead { font-size: 1.2rem; color: var(--text); max-width: 34rem; margin: 0 auto 2rem; }
+        .anchor { width: 120px; height: 120px; margin: 0 auto 2rem; border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-strong)); animation: pulse 2.4s ease-out infinite; display:grid; place-items:center; color:#06202e; font-size:2.6rem; font-weight:800; }
+        @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(56,189,248,.45)} 70%{box-shadow:0 0 0 34px rgba(56,189,248,0)} 100%{box-shadow:0 0 0 0 rgba(56,189,248,0)} }
+        .cta { display:inline-block; padding:.9rem 1.6rem; margin:.25rem; border-radius:14px; font-weight:700; text-decoration:none; }
+        .cta.primary { background:var(--accent); color:#06202e; }
+        .cta.secondary { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+        section { padding: 2rem 0; }
+        .steps { display:grid; gap:1rem; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); padding:0; list-style:none; margin:0; }
+        .steps li { background:var(--surface); border-radius:14px; padding:1.1rem 1.25rem; }
+        .steps strong { display:block; color:var(--text); margin-bottom:.25rem; }
+        .steps span { color:var(--muted); font-size:.95rem; }
+        .card { background:var(--surface); border-radius:14px; padding:1.25rem 1.5rem; }
+        .card p:last-child { margin-bottom:0; }
+        ul.plain { margin:0 0 1rem; padding-left:1.25rem; color:var(--muted); }
+        footer { padding: 2rem 0 3rem; text-align:center; border-top:1px solid var(--border); font-size:.9rem; }
+        a { color: var(--accent); }
+        .skip:focus-visible, a:focus-visible, .cta:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+        @media (prefers-reduced-motion: reduce) { .anchor { animation: none; } html { scroll-behavior: auto; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header class="hero">
+            <div class="anchor" aria-hidden="true">⚓</div>
+            <h1>A 5-second cognitive reset for the scroll.</h1>
+            <p class="lead">When you find yourself scrolling on autopilot, FocusAnchor gives your body something real to hold on to, then lets you choose what happens next.</p>
+            <a class="cta primary" href="#install">Get FocusAnchor</a>
+            <a class="cta secondary" href="../">Try the web version</a>
+        </header>
+
+        <section aria-labelledby="how">
+            <h2 id="how">How it works</h2>
+            <ol class="steps">
+                <li><strong>1. Notice</strong><span>You open a site you tend to lose time on. A calm full-screen pause appears instead of the feed.</span></li>
+                <li><strong>2. Anchor</strong><span>Press and hold for 5 seconds. Touch, sound and a slow-filling ring pull your attention into the present moment.</span></li>
+                <li><strong>3. Choose</strong><span>Try a tiny grounding step, continue on purpose, or close the tab. It's always your call.</span></li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="why">
+            <h2 id="why">Not a blocker. A reset.</h2>
+            <p>Automatic scrolling and "frozen" moments often feel like the same thing from the inside: your attention is stuck in a loop and willpower doesn't help. FocusAnchor doesn't lock you out or shame you. It interrupts the loop with something physical, then hands the decision back to you.</p>
+            <p>The grounding steps are simple and low-pressure: find three blue objects, press your feet into the floor, put the phone face down for a minute. Nothing asks you to close your eyes, hold your breath, or revisit anything difficult. Skip any of them.</p>
+        </section>
+
+        <section aria-labelledby="privacy">
+            <h2 id="privacy">100% on-device</h2>
+            <div class="card">
+                <ul class="plain">
+                    <li>No account, no sign-up, no servers.</li>
+                    <li>Your name, settings and pause history are stored only in your browser.</li>
+                    <li>Nothing is sent anywhere, and there is no tracking or analytics.</li>
+                    <li>It only runs on a short starter list of sites, plus any you add yourself, each with your explicit permission.</li>
+                </ul>
+                <p><a href="privacy.html">Read the privacy policy</a></p>
+            </div>
+        </section>
+
+        <section aria-labelledby="install">
+            <h2 id="install">Get it</h2>
+            <p>FocusAnchor is an early prototype and is being prepared for the Chrome Web Store. Until it's listed, you can try the web version in any browser, including your phone. If you'd like to join the early tester group for the Chrome extension, open an issue or message on the project page.</p>
+            <a class="cta secondary" href="https://github.com/mat1505455-max/focus-anchor-MVP">Project on GitHub</a>
+        </section>
+
+        <footer>
+            <p>FocusAnchor is a self-regulation tool. It is not a medical device and is not a substitute for professional care.</p>
+        </footer>
+    </div>
+</body>
+</html>
