@@ -119,7 +119,20 @@ const GROUNDING_TASKS = [
     "Walk to another room slowly and notice each step.",
     "Notice any scent in the air around you, or just the feeling of the air on your skin.",
     "Find three round objects around you.",
-    "Rest your hands on your thighs and feel their weight."
+    "Rest your hands on your thighs and feel their weight.",
+    // Structured breathing (gentle, optional holds) and color orienting
+    "Box breathing: in for 4, pause for 4, out for 4, pause for 4. Repeat 3 times. Skip the pauses if they don't feel comfortable.",
+    "4-7-8 breathing: in through your nose for 4, hold gently for 7, out slowly through your mouth for 8. Do 3 rounds, and shorten the hold if it feels strained.",
+    "Physiological sigh: a double inhale through your nose (a big one, then a small top-up), then a long, slow exhale through your mouth. Repeat 3 times.",
+    "Even breathing: in for 5 and out for 5, easily, for about a minute.",
+    "Longer exhale: in for 4, out for 6. Repeat 5 times.",
+    "Triangle breathing: in for 4, a gentle pause for 4, out for 4. Repeat 4 times, and skip the pause if you'd rather.",
+    "Humming breath: breathe in through your nose, then hum softly as you breathe out. Repeat 4 times.",
+    "Straw breathing: in through your nose for 2, then out through pursed lips for 4, as if blowing through a straw. Repeat 5 times.",
+    "Find 3 things in your favorite color. Let your eyes rest on each one.",
+    "Find 3 green things in the room. If colors are hard to tell apart, go with whatever looks closest.",
+    "Find the brightest color in the room and rest your eyes on it for 10 seconds.",
+    "Find one red thing, one yellow thing, and one blue thing, and rest your eyes on each for a moment."
 ];
 
 // Random index in [0, length) that differs from the last one used for this key.

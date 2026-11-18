@@ -398,14 +398,14 @@ async function showOverlay(domain) {
                 <p>Try this if it feels right. Skipping is fine.</p>
                 <p class="task" aria-live="polite"></p>
                 <div class="actions">
-                    <button type="button" class="primary" id="reroll">Give me another</button>
-                    <button type="button" class="secondary" id="continue"></button>
-                    <button type="button" class="link" id="close">Close this tab</button>
+                    <button type="button" class="primary" id="close">Close this tab</button>
+                    <button type="button" class="secondary" id="reroll">Give me another</button>
+                    <button type="button" class="link" id="continue"></button>
                 </div>
             </div>
         `;
-        // Keep keyboard focus inside the dialog, on the neutral option (not the one that leaves the pause)
-        overlay.querySelector('#reroll').focus();
+        // Keep keyboard focus inside the dialog, never on "Continue"
+        overlay.querySelector('#close').focus();
         const taskEl = overlay.querySelector('.task');
         const showTask = () => { taskEl.textContent = GROUNDING_TASKS[pickFresh(GROUNDING_TASKS.length, 'task')]; };
         showTask();
