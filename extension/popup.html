@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>FocusAnchor</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <h1>FocusAnchor ⚓</h1>
+
+    <section>
+        <h2>This week</h2>
+        <p id="summary" class="muted">Loading…</p>
+        <div id="hours" class="hours" aria-label="Pauses by hour of day"></div>
+        <div class="hours-axis"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div>
+    </section>
+
+    <section>
+        <h2>Your anchor</h2>
+        <label for="name">Name</label>
+        <input id="name" type="text" maxlength="30" placeholder="What should we call you?" autocomplete="given-name">
+        <label for="persona">Voice</label>
+        <select id="persona">
+            <option value="empathetic">Friend (supportive)</option>
+            <option value="commander">Commander (direct)</option>
+            <option value="analytical">Researcher (observational)</option>
+        </select>
+        <label for="passMinutes">Pause-free time after "Continue" (minutes)</label>
+        <input id="passMinutes" type="number" min="1" max="120">
+    </section>
+
+    <section>
+        <h2>Sites to pause</h2>
+        <textarea id="blocklist" rows="5" spellcheck="false" aria-label="One domain per line"></textarea>
+        <p class="muted small">One domain per line, e.g. reddit.com</p>
+        <button id="save" type="button">Save</button>
+        <span id="saved" class="muted small" hidden>Saved</span>
+    </section>
+
+    <p class="muted small">Everything stays on this device. Nothing is sent anywhere.<br>Not a substitute for professional care.</p>
+
+    <script src="popup.js"></script>
+</body>
+</html>
