@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FocusAnchor privacy policy</title>
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#FDFBF7">
     <style>
-        :root { --bg:#0f172a; --text:#f1f5f9; --muted:#94a3b8; --accent:#38bdf8; }
-        body { margin:0; background:var(--bg); color:var(--text); font:17px/1.65 system-ui,-apple-system,'Segoe UI',sans-serif; }
-        main { max-width: 680px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
-        h1 { font-size: 2rem; margin: 0 0 .5rem; }
-        h2 { font-size: 1.25rem; margin: 2rem 0 .5rem; }
-        p, li { color: var(--muted); }
-        a { color: var(--accent); }
+        :root { color-scheme: light; --cream:#FDFBF7; --cream-deep:#F3EEE2; --sage:#8A9A86; --sage-deep:#5C6E58; --forest:#2C4535; --ink:#1F2A24; --ink-soft:#4A5A50; }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin:0; background: radial-gradient(circle at 50% 0%, #FFFFFF 0%, var(--cream) 50%, var(--cream-deep) 100%); background-attachment: fixed; color:var(--ink); font:17px/1.7 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
+        a { color: var(--forest); text-underline-offset: 3px; }
+        a:focus-visible, .cta:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
+
+        main { max-width: 680px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+        h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 .5rem; }
+        h2 { font-size: 1.25rem; font-weight: 600; margin: 2rem 0 .5rem; }
+        p, li { color: var(--ink-soft); }
+        code { background: var(--cream-deep); padding: .1rem .35rem; border-radius: 6px; color: var(--ink); }
     </style>
 </head>
 <body>

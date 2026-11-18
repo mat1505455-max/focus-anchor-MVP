@@ -1,16 +1,22 @@
 /* ==========================================
    1. DESIGN TOKENS & RESET
+   Cream / sage design system, shared with the Chrome extension.
+   Contrast on cream (#FDFBF7): ink 14:1, ink-soft 7:1, cream-on-forest 10:1.
+   Sage (#8A9A86) is ~2.9:1 on cream, so it is only used as a fill next to an
+   ink outline or ink text, never as the only cue.
    ========================================== */
 :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface-hover: #334155;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --accent: #38bdf8;
-    --accent-strong: #0ea5e9;
-    --accent-glow: rgba(56, 189, 248, 0.45);
-    --radius: 14px;
+    color-scheme: light;
+    --cream: #FDFBF7;
+    --cream-deep: #F3EEE2;
+    --sage: #8A9A86;
+    --sage-deep: #5C6E58;
+    --forest: #2C4535;
+    --ink: #1F2A24;
+    --ink-soft: #4A5A50;
+    --field-border: #5E6D63;
+    --error: #8A1C1C;
+    --radius: 16px;
     --anchor-size: 200px;
 }
 
@@ -27,26 +33,32 @@ body {
 }
 
 body {
-    background: var(--bg);
-    color: var(--text);
+    background: radial-gradient(circle at 50% 30%, #FFFFFF 0%, var(--cream) 55%, var(--cream-deep) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Heebo", Arial, sans-serif;
-    line-height: 1.5;
+    line-height: 1.6;
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2 {
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.9rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     line-height: 1.25;
+    color: var(--ink);
 }
 
-h1 { font-size: 1.75rem; }
-h2 { font-size: 1.5rem; }
+h1 { font-size: 1.85rem; }
+h2 { font-size: 1.6rem; }
 
 p {
-    margin: 0 0 1rem;
-    color: var(--text-muted);
+    margin: 0 0 1.1rem;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
 }
 
 /* ==========================================
@@ -55,7 +67,7 @@ p {
 .screen {
     display: none;
     min-height: 100dvh;
-    padding: 2rem 1.25rem;
+    padding: 2rem 1.5rem;
     max-width: 480px;
     margin: 0 auto;
     flex-direction: column;
@@ -65,7 +77,7 @@ p {
 
 .screen.active {
     display: flex;
-    animation: screen-in 0.3s ease-out;
+    animation: screen-in 0.5s ease-out;
 }
 
 @keyframes screen-in {
@@ -75,18 +87,23 @@ p {
 
 /* ==========================================
    3. BUTTONS & INPUTS
+   Minimal, 52px+ targets; state changes use scale and opacity only.
    ========================================== */
 button {
     font: inherit;
     color: inherit;
     cursor: pointer;
-    border: none;
+    border: 2px solid var(--ink);
+    transition: transform 0.18s ease, opacity 0.18s ease, background-color 0.18s ease;
 }
+
+button:hover { transform: scale(1.02); }
+button:active { transform: scale(0.97); opacity: 0.85; }
 
 button:focus-visible,
 input:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 2px;
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
 }
 
 .input-group {
@@ -97,24 +114,19 @@ input:focus-visible {
 .input-group label {
     display: block;
     margin-bottom: 0.4rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
 }
 
 .input-group input {
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 0.9rem 1rem;
     font: inherit;
     font-size: 1rem; /* 16px+ prevents iOS zoom on focus */
-    color: var(--text);
-    background: var(--surface);
-    border: 2px solid transparent;
+    color: var(--ink);
+    background: #FFFFFF;
+    border: 2px solid var(--field-border);
     border-radius: var(--radius);
-}
-
-.input-group input:focus {
-    border-color: var(--accent);
-    outline: none;
 }
 
 .persona-selector {
@@ -127,79 +139,124 @@ input:focus-visible {
 .btn-persona {
     min-height: 56px;
     padding: 0.85rem 1rem;
-    background: var(--surface);
-    border: 2px solid transparent;
+    background: transparent;
     border-radius: var(--radius);
-    transition: background 0.15s, border-color 0.15s, transform 0.1s;
 }
 
-.btn-persona:active {
-    transform: scale(0.98);
-}
-
+/* Selected state: filled AND a check mark, so it never depends on color */
 .btn-persona.selected {
-    background: var(--surface-hover);
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-glow);
+    color: var(--cream);
+    background: var(--forest);
+    border-color: var(--forest);
+    font-weight: 600;
+}
+
+.btn-persona.selected::before {
+    content: "\2713\00a0";
 }
 
 .link-btn {
     margin-top: 1rem;
     padding: 0.5rem;
+    min-height: 44px;
     background: none;
-    color: var(--text-muted);
-    font-size: 0.95rem;
+    border-color: transparent;
+    color: var(--ink-soft);
+    font-size: 1rem;
     text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .field-error {
     margin: 0.5rem 0 0;
-    font-size: 0.9rem;
-    color: #fca5a5;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--error);
 }
 
+.field-error::before {
+    content: "\26A0\00a0";
+}
+
+/* Primary: solid forest. Secondary: ink outline. */
 #welcome-next-btn,
 #start-btn,
+#reroll-btn {
+    min-height: 56px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--cream);
+    background: var(--forest);
+    border-color: var(--forest);
+    border-radius: var(--radius);
+}
+
 #reset-btn {
     min-height: 56px;
     padding: 0.9rem 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.1rem;
-    color: #06202e;
-    background: var(--accent);
+    color: var(--ink);
+    background: transparent;
     border-radius: var(--radius);
-    transition: background 0.15s, transform 0.1s;
 }
+
+#reset-btn:hover { background: var(--cream-deep); }
 
 #welcome-next-btn {
     width: 100%;
 }
 
-#welcome-next-btn:active,
-#start-btn:active,
-#reset-btn:active {
-    background: var(--accent-strong);
-    transform: scale(0.98);
-}
-
 /* ==========================================
-   4. ANCHOR (screen 2)
+   4. ANCHOR (screen 3)
+   The halos breathe with transform + opacity only. The button's touch handling
+   (touch-action, user-select) is deliberately untouched.
    ========================================== */
 .anchor-container {
+    position: relative;
     display: flex;
     justify-content: center;
-    margin: 1.5rem 0;
+    align-items: center;
+    height: calc(var(--anchor-size) * 1.5);
+    margin: 0.5rem 0;
+}
+
+.anchor-container::before,
+.anchor-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: var(--anchor-size);
+    height: var(--anchor-size);
+    border-radius: 50%;
+    background: var(--sage);
+    opacity: 0.3;
+    pointer-events: none;
+    will-change: transform, opacity;
+    animation: breathe 7s ease-in-out infinite;
+}
+
+.anchor-container::after {
+    animation-delay: -3.5s;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.34; }
+    50%      { transform: scale(1.35); opacity: 0.1; }
 }
 
 #touch-anchor {
     position: relative;
+    z-index: 1;
     width: var(--anchor-size);
     height: var(--anchor-size);
+    padding: 0;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, var(--accent), var(--accent-strong));
-    box-shadow: 0 0 0 0 var(--accent-glow);
-    animation: pulse 2s ease-out infinite;
-    transition: transform 0.15s ease-out;
+    background: var(--sage);
+    border: 2px solid var(--ink);
+    color: var(--ink);
     /* Keep the hold gesture from triggering scroll, zoom, text selection or the long-press menu */
     touch-action: none;
     user-select: none;
@@ -207,11 +264,9 @@ input:focus-visible {
     -webkit-touch-callout: none;
 }
 
-#touch-anchor:active {
-    transform: scale(0.94);
-    animation-play-state: paused;
-    box-shadow: 0 0 0 18px var(--accent-glow);
-}
+#touch-anchor:hover { transform: none; }
+#touch-anchor:active { transform: scale(0.96); opacity: 1; }
+#touch-anchor:focus-visible { outline-offset: 8px; }
 
 /* Progress ring: a 5s linear fill while held, snaps back instantly on release */
 .progress-ring {
@@ -229,11 +284,12 @@ input:focus-visible {
 }
 
 .progress-ring__track {
-    stroke: rgba(6, 32, 46, 0.25);
+    stroke: var(--ink);
+    opacity: 0.18;
 }
 
 .progress-ring__bar {
-    stroke: #06202e;
+    stroke: var(--ink);
     stroke-linecap: round;
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
@@ -244,75 +300,73 @@ input:focus-visible {
     transition: stroke-dashoffset 5s linear;
 }
 
-/* One visual beat per second: the iPhone stand-in for vibration */
-#touch-anchor.beat {
-    animation: beat 0.35s ease-out;
+/* One visible ripple per second (the iPhone stand-in for vibration): transform + opacity only */
+#touch-anchor::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid var(--sage-deep);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#touch-anchor.beat::after {
+    animation: beat 0.5s ease-out;
 }
 
 @keyframes beat {
-    0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-    100% { box-shadow: 0 0 0 28px rgba(255, 255, 255, 0); }
+    0%   { transform: scale(1); opacity: 0.7; }
+    100% { transform: scale(1.35); opacity: 0; }
 }
 
 #countdown-timer {
     position: relative;
-    font-size: 4.5rem;
-    font-weight: 800;
-    color: #06202e;
+    font-size: 4.2rem;
+    font-weight: 700;
+    color: var(--ink);
     pointer-events: none;
 }
 
-@keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 var(--accent-glow); }
-    70%  { box-shadow: 0 0 0 36px rgba(56, 189, 248, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
-}
-
 .hint-text {
-    font-size: 0.95rem;
+    min-height: 1.7em;
+    font-size: 1rem;
+    color: var(--ink);
 }
 
 /* ==========================================
-   5. ACTION SCREEN (screen 3)
+   5. ACTION SCREEN (screen 4)
    ========================================== */
 .action-suggestions {
     margin: 0 0 1.75rem;
-    padding: 1rem 1.25rem;
-    background: var(--surface);
-    border-radius: var(--radius);
+    padding: 1.4rem 1.5rem;
+    background: var(--cream-deep);
+    border: 1.5px solid var(--sage-deep);
+    border-radius: 20px;
     text-align: start;
 }
 
 .action-suggestions p {
     margin: 0;
-    font-size: 1.15rem;
-    line-height: 1.5;
-    color: var(--text);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--ink);
 }
 
-.btn-secondary {
+#reroll-btn {
     display: block;
     width: 100%;
-    min-height: 52px;
     margin: 0 0 0.75rem;
-    padding: 0.8rem 1.5rem;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--surface-hover);
-    border-radius: var(--radius);
 }
 
-.btn-secondary:active {
-    background: var(--surface-hover);
+#reset-btn {
+    width: 100%;
 }
 
 .disclaimer {
     margin-top: 1.5rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    opacity: 0.8;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
 }
 
 /* ==========================================
@@ -320,7 +374,7 @@ input:focus-visible {
    ========================================== */
 @media (max-width: 360px) {
     :root { --anchor-size: 170px; }
-    h1 { font-size: 1.5rem; }
+    h1 { font-size: 1.55rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
