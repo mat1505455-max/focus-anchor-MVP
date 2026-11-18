@@ -21,6 +21,7 @@
             </div>
             <button type="submit" id="welcome-next-btn">Continue</button>
         </form>
+        <p class="disclaimer">Not a substitute for professional care.</p>
     </section>
 
     <!-- Screen 2: persona selection -->
@@ -62,18 +63,14 @@
 
     <!-- Screen 4: micro-action prompt -->
     <section id="screen-action" class="screen">
-        <h2>Anchor locked. What's the next micro-step?</h2>
-        <p>Don't think about the whole task. Pick one small action that takes less than 2 minutes.</p>
+        <h2>Anchor locked. Stay with your body for a moment.</h2>
+        <p>Try this if it feels right. Skipping is fine.</p>
 
         <div class="action-suggestions">
-            <p><strong>Examples of micro-actions:</strong></p>
-            <ul>
-                <li>Open an empty file and write a single line.</li>
-                <li>Read just one paragraph of the book.</li>
-                <li>Wash one cup that's in the sink.</li>
-            </ul>
+            <p id="grounding-task" aria-live="polite"></p>
         </div>
 
+        <button type="button" id="reroll-btn" class="btn-secondary">Give me another</button>
         <button id="reset-btn">Done, thanks</button>
     </section>
 

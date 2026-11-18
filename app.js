@@ -21,26 +21,97 @@ function writeStorage(key, value) {
 let userName = readStorage(STORAGE_KEYS.name) || DEFAULT_NAME;
 const savedPersona = readStorage(STORAGE_KEYS.persona);
 
+// Persona messages: 3 variants each, rotated so the same one never shows twice in a row
 const getPersonaData = (name) => ({
-    commander: {
-        title: `${name}, stop scrolling.`,
-        instruction: "Put the phone down, take a breath, and let's get back to work. Move."
-    },
-    empathetic: {
-        title: `Hey ${name}, it's okay.`,
-        instruction: "It's completely natural that you escaped here. Let's take a breath together."
-    },
-    analytical: {
-        title: "I detected a short-term dopamine loop.",
-        instruction: "Returning to the exercise now for 3 minutes will break the procrastination chain."
-    }
+    commander: [
+        {
+            title: `${name}, stop scrolling.`,
+            instruction: "Put the phone down, take a breath, and come back to this room. Feel your feet."
+        },
+        {
+            title: `${name}, that's enough.`,
+            instruction: "The feed will still be there later. Exhale, sit up, and plant your feet on the floor."
+        },
+        {
+            title: `Eyes up, ${name}.`,
+            instruction: "You caught yourself. Now feel your body. One slow breath, then move."
+        }
+    ],
+    empathetic: [
+        {
+            title: `Hey ${name}, it's okay.`,
+            instruction: "It's completely natural that you escaped here. Let's take a breath together."
+        },
+        {
+            title: `Hey ${name}, I've got you.`,
+            instruction: "Getting stuck happens to everyone. Breathe out slowly, then we'll take one tiny step."
+        },
+        {
+            title: `No judgment, ${name}.`,
+            instruction: "You noticed, and that's the hard part. Let's ease back into your body together."
+        }
+    ],
+    analytical: [
+        {
+            title: "Dopamine loop interrupted.",
+            instruction: "Somatic grounding engaged. Your nervous system is already starting to settle."
+        },
+        {
+            title: "Nervous system regulation in progress.",
+            instruction: "Steady physical contact and a slow exhale help the body shift out of a stress response."
+        },
+        {
+            title: "Pattern noted: scroll-driven freeze.",
+            instruction: "Noticing it is the first regulation step. Next, one small sensory input to anchor you in the present."
+        }
+    ]
 });
+
+// Screen 4 grounding tasks: sensory, physical, and zero-pressure transitions.
+// Deliberately no eyes-closed, breath-holding or recall prompts (trauma-informed).
+const GROUNDING_TASKS = [
+    "Find 3 blue objects in the room. Let your eyes rest on each one for a moment.",
+    "Drink a glass of cold water, slowly. Notice the temperature in your mouth and throat.",
+    "Name 5 things you can see, 4 you can touch, and 3 you can hear.",
+    "Hold something cold or textured, like a cold glass or a piece of fabric. Notice exactly how it feels.",
+    "Stand up, stretch your arms overhead, and sit back down.",
+    "Press your feet firmly into the floor for 10 seconds. Feel the ground hold you.",
+    "Roll your shoulders back 5 times, slowly.",
+    "Splash cool water on your face or wrists.",
+    "Put the phone face down on the table for 1 minute.",
+    "Look out of a window, or at the farthest point in the room, for 30 seconds."
+];
+
+// Random index in [0, length) that differs from the last one used for this key.
+// The last index is persisted so it stays fresh across visits; memory is the fallback.
+const lastPicks = {};
+
+function pickFresh(length, storageKey) {
+    if (length <= 1) return 0;
+    let last = lastPicks[storageKey];
+    if (last === undefined) {
+        const stored = parseInt(readStorage(storageKey), 10);
+        last = Number.isInteger(stored) ? stored : -1;
+    }
+    let index;
+    do {
+        index = Math.floor(Math.random() * length);
+    } while (index === last);
+    lastPicks[storageKey] = index;
+    writeStorage(storageKey, String(index));
+    return index;
+}
 
 
 let appState = {
     currentPersona: VALID_PERSONAS.includes(savedPersona) ? savedPersona : 'commander',
     currentScreen: 'screen-onboarding',
     timerInterval: null
+};
+
+const PICK_KEYS = {
+    variantPrefix: 'focus_anchor_last_variant_',
+    task: 'focus_anchor_last_task'
 };
 
 // ==========================================
@@ -62,11 +133,20 @@ function navigateTo(screenId) {
     if (screenId === 'screen-intervention') {
         loadInterventionText();
     }
+
+    if (screenId === 'screen-action') {
+        loadGroundingTask();
+    }
+}
+
+function loadGroundingTask() {
+    const taskEl = document.getElementById('grounding-task');
+    if (taskEl) taskEl.textContent = GROUNDING_TASKS[pickFresh(GROUNDING_TASKS.length, PICK_KEYS.task)];
 }
 
 function loadInterventionText() {
-    const allPersonas = getPersonaData(userName);
-    const personaData = allPersonas[appState.currentPersona];
+    const variants = getPersonaData(userName)[appState.currentPersona];
+    const personaData = variants[pickFresh(variants.length, PICK_KEYS.variantPrefix + appState.currentPersona)];
 
     const titleEl = document.getElementById('intervention-title');
     const descEl = document.getElementById('intervention-desc');
@@ -332,7 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
         touchAnchor.addEventListener('touchcancel', stopGrounding);
     }
 
-    // Screen 3: reset button
+    // Screen 4: reroll the grounding task
+    const rerollBtn = document.getElementById('reroll-btn');
+    if (rerollBtn) rerollBtn.addEventListener('click', loadGroundingTask);
+
+    // Screen 4: reset button
     const resetBtn = document.getElementById('reset-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
