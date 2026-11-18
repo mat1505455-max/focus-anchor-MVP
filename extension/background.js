@@ -2,8 +2,8 @@
 //  1. Seed the starter blocklist on first install.
 //  2. Keep one dynamic content-script registration in sync with the blocklist, limited to
 //     sites Chrome has actually granted host permission for (starter list + user-approved extras).
-//  3. Tell the content script to re-check on single-page-app navigations.
-//  4. Close a tab on request.
+//  3. Close a tab on request.
+// (Single-page-app navigation is detected inside the content script, so no webNavigation permission.)
 // All data lives in chrome.storage.local, nothing leaves the device.
 
 const DEFAULT_BLOCKLIST = [
@@ -63,18 +63,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
 });
 chrome.permissions.onAdded.addListener(scheduleSync);
 chrome.permissions.onRemoved.addListener(scheduleSync);
-
-// Single-page apps change the URL without a page load. The content script is already in the page,
-// so ask it to re-check (it shows the overlay if the site is blocked and no pause-free pass is active).
-chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
-    if (details.frameId !== 0) return; // top frame only
-    try {
-        const { blocklist = [] } = await chrome.storage.local.get('blocklist');
-        const host = new URL(details.url).hostname.toLowerCase();
-        const blocked = blocklist.some(d => host === d || host.endsWith('.' + d));
-        if (blocked) await chrome.tabs.sendMessage(details.tabId, { type: 'check' });
-    } catch (e) { /* no content script in this tab, or the tab is gone */ }
-});
 
 // Content scripts can't reliably close their own tab, so they ask us
 chrome.runtime.onMessage.addListener((message, sender) => {

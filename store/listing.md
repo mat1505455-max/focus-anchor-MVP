@@ -45,7 +45,6 @@ Show a short, calming pause screen with a 5-second hold-to-anchor interaction be
 ## Permission justifications (Developer Dashboard fields)
 - **storage**: Saves the user's name, voice, site list, pause-free time and a local event log (domain and timestamp) used for the user's own weekly summary. Nothing is transmitted.
 - **scripting**: Registers the pause-screen content script for the sites on the user's list, including sites the user adds later.
-- **webNavigation**: Detects in-page (history API) navigation on single-page apps such as YouTube, so the pause can reappear without a full page reload. URLs are compared with the user's list locally and are not stored or sent.
 - **Host permissions (youtube.com, instagram.com, reddit.com, tiktok.com, facebook.com, x.com, twitter.com)**: Required to show the pause screen on this starter list of common distraction sites.
 - **Optional host permissions (all sites)**: Requested at runtime only for a specific site the user adds to their list. Never requested for all sites at once.
 - **Remote code**: None. All code is packaged in the extension.

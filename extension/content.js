@@ -17,11 +17,28 @@ let overlayOpen = false;
     setInterval(check, 30000);
     window.addEventListener('pageshow', (e) => { if (e.persisted) check(); });
     document.addEventListener('visibilitychange', () => { if (!document.hidden) check(); });
-    // The background script pings us on single-page-app navigations (history.pushState)
-    chrome.runtime.onMessage.addListener((message) => {
-        if (message && message.type === 'check') check();
-    });
+    watchUrlChanges();
 })();
+
+// Single-page apps change the URL without a page load. Content scripts live in an isolated world,
+// so wrapping history.pushState here wouldn't see the page's own calls. Instead use the Navigation
+// API (Chrome 102+), which reports same-document navigations, plus popstate/hashchange, plus a cheap
+// href poll as a fallback. Everything runs on this page; no extra permission is needed.
+function watchUrlChanges() {
+    let lastHref = location.href;
+    const onUrlChange = () => {
+        if (location.href === lastHref) return;
+        lastHref = location.href;
+        check(); // shows the overlay if the site is blocked and no pause-free pass is active
+    };
+
+    window.addEventListener('popstate', onUrlChange);
+    window.addEventListener('hashchange', onUrlChange);
+    if (window.navigation && window.navigation.addEventListener) {
+        window.navigation.addEventListener('navigatesuccess', onUrlChange);
+    }
+    setInterval(onUrlChange, 1000);
+}
 
 // Returns the matching blocklist entry, or null. "www.instagram.com" matches "instagram.com".
 function matchBlocked(hostname, blocklist) {
