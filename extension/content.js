@@ -105,6 +105,35 @@ function buzz(pattern) {
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* optional */ }
 }
 
+// --- Media guard -----------------------------------------------------------
+// While the overlay is open, keep the page's audio/video silent. SPAs like YouTube start playback
+// asynchronously, so pausing once isn't enough: pause now, pause anything that fires a play event,
+// and sweep periodically (covers media elements added after we mounted). Only runs while the overlay is open.
+
+function pauseAllMedia() {
+    document.querySelectorAll('video, audio').forEach((media) => {
+        if (!media.paused) media.pause();
+    });
+}
+
+function startMediaGuard() {
+    const onPlay = (e) => {
+        const target = e.target;
+        if (target instanceof HTMLMediaElement && !target.paused) target.pause();
+    };
+    // 'play' and 'playing' don't bubble, so listen in the capture phase on the document
+    document.addEventListener('play', onPlay, true);
+    document.addEventListener('playing', onPlay, true);
+    const sweep = setInterval(pauseAllMedia, 500);
+    pauseAllMedia();
+
+    return () => {
+        clearInterval(sweep);
+        document.removeEventListener('play', onPlay, true);
+        document.removeEventListener('playing', onPlay, true);
+    };
+}
+
 // --- Overlay ---------------------------------------------------------------
 
 const OVERLAY_CSS = `
@@ -178,7 +207,10 @@ async function showOverlay(domain) {
     const previousOverflow = root.style.overflow;
     root.style.overflow = 'hidden';
 
+    const stopMediaGuard = startMediaGuard();
+
     function dismiss() {
+        stopMediaGuard();
         stopHold(true);
         host.remove();
         root.style.overflow = previousOverflow;
