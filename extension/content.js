@@ -137,53 +137,123 @@ function startMediaGuard() {
 // --- Overlay ---------------------------------------------------------------
 
 const OVERLAY_CSS = `
-    :host { all: initial; }
+    /* Palette. Contrast on cream (#FDFBF7): ink 14:1, ink-soft 7:1, forest 10:1 (AAA).
+       Sage (#8A9A86) is ~2.9:1 against cream, so it is only ever a fill: it is always paired with
+       an ink outline (shape) and ink text (4.9:1 on sage), never relied on as the only cue. */
+    :host {
+        all: initial;
+        color-scheme: light;
+        --cream: #FDFBF7;
+        --cream-deep: #F3EEE2;
+        --sage: #8A9A86;
+        --sage-deep: #5C6E58;
+        --forest: #2C4535;
+        --ink: #1F2A24;
+        --ink-soft: #4A5A50;
+    }
     * { box-sizing: border-box; }
+
     .overlay {
         position: fixed; inset: 0; z-index: 2147483647;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 1rem; padding: 2rem; overflow-y: auto;
-        background: #0f172a; color: #f1f5f9;
-        font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; text-align: center;
+        display: flex; align-items: center; justify-content: center;
+        padding: 2rem 1.5rem; overflow-y: auto;
+        background: radial-gradient(circle at 50% 38%, #FFFFFF 0%, var(--cream) 55%, var(--cream-deep) 100%);
+        color: var(--ink);
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        text-align: center;
+        -webkit-font-smoothing: antialiased;
+        animation: fade-in 0.5s ease-out;
     }
-    h1 { margin: 0; font-size: 1.9rem; line-height: 1.25; }
-    p { margin: 0; max-width: 30rem; color: #94a3b8; font-size: 1.1rem; line-height: 1.5; }
-    .task { color: #f1f5f9; font-size: 1.25rem; background: #1e293b; padding: 1.1rem 1.4rem; border-radius: 14px; }
-    .hint { font-size: 0.95rem; min-height: 1.4em; }
-    .actions { display: flex; flex-direction: column; gap: 0.7rem; width: min(22rem, 100%); margin-top: 0.5rem; }
-    button { font: inherit; cursor: pointer; border: 0; border-radius: 14px; padding: 0.85rem 1.5rem; font-weight: 700; }
-    .primary { color: #06202e; background: #38bdf8; }
-    .secondary { color: #f1f5f9; background: #1e293b; border: 1px solid #334155; font-weight: 600; }
-    .link { color: #94a3b8; background: none; text-decoration: underline; font-weight: 500; }
-    button:focus-visible { outline: 3px solid #38bdf8; outline-offset: 3px; }
+    .stage {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 1.5rem; width: 100%; max-width: 34rem; margin: auto;
+        animation: rise-in 0.6s ease-out;
+    }
+    h1 { margin: 0; font-size: clamp(1.75rem, 4.5vw, 2.4rem); font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--ink); }
+    p { margin: 0; font-size: 1.15rem; line-height: 1.7; color: var(--ink-soft); }
+    .hint { min-height: 1.7em; font-size: 1rem; color: var(--ink); }
+
+    .task {
+        width: 100%; padding: 1.4rem 1.6rem;
+        font-size: 1.25rem; line-height: 1.6; color: var(--ink);
+        background: var(--cream-deep); border: 1.5px solid var(--sage-deep); border-radius: 20px;
+    }
+
+    /* Buttons: minimal, 48px+ targets, state changes use scale/opacity only */
+    .actions { display: flex; flex-direction: column; gap: 0.75rem; width: min(22rem, 100%); margin-top: 0.5rem; }
+    button {
+        font: inherit; font-size: 1.05rem; font-weight: 600; cursor: pointer;
+        min-height: 52px; padding: 0.8rem 1.5rem;
+        border: 2px solid var(--ink); border-radius: 16px;
+        transition: transform 0.18s ease, opacity 0.18s ease, background-color 0.18s ease;
+    }
+    button:hover { transform: scale(1.02); }
+    button:active { transform: scale(0.97); opacity: 0.85; }
+    button:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+    .primary { color: var(--cream); background: var(--forest); border-color: var(--forest); }
+    .primary:hover { opacity: 0.92; }
+    .secondary { color: var(--ink); background: transparent; }
+    .secondary:hover { background: var(--cream-deep); }
+    .link {
+        min-height: 44px; color: var(--ink-soft); background: none; border-color: transparent;
+        font-weight: 500; text-decoration: underline; text-underline-offset: 4px;
+    }
+    .link:hover { color: var(--ink); }
+
+    /* The anchor. Breathing uses transform + opacity only (compositor-friendly, 60fps) */
+    .orb { position: relative; display: grid; place-items: center; width: 240px; height: 240px; margin: 0.5rem 0; }
+    .halo, .beat-ring {
+        position: absolute; width: 168px; height: 168px; border-radius: 50%; pointer-events: none;
+        will-change: transform, opacity;
+    }
+    .halo { background: var(--sage); opacity: 0.3; animation: breathe 7s ease-in-out infinite; }
+    .halo-b { animation-delay: -3.5s; }
+    .beat-ring { border: 2px solid var(--sage-deep); opacity: 0; }
+    .beat-ring.go { animation: beat 0.5s ease-out; }
 
     .anchor {
-        position: relative; width: 180px; height: 180px; margin: 0.75rem 0; padding: 0; border-radius: 50%;
-        color: #06202e; font-size: 4rem; font-weight: 800;
-        background: radial-gradient(circle at 30% 30%, #38bdf8, #0ea5e9);
-        animation: pulse 2s ease-out infinite;
+        position: relative; width: 168px; height: 168px; padding: 0; border-radius: 50%;
+        border: 0; background: none; color: var(--ink);
         touch-action: none; user-select: none; -webkit-user-select: none;
     }
-    .anchor:active { transform: scale(0.96); }
+    .anchor:hover { transform: none; }
+    .anchor:active { transform: scale(0.97); opacity: 1; }
+    .anchor:focus-visible { outline: 3px solid var(--ink); outline-offset: 8px; }
+    .disc {
+        position: absolute; inset: 16px; border-radius: 50%;
+        background: var(--sage); border: 2px solid var(--ink);
+        animation: breathe-core 7s ease-in-out infinite; will-change: transform;
+    }
     .ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); pointer-events: none; }
     .ring circle { fill: none; stroke-width: 5; }
-    .ring .track { stroke: rgba(6, 32, 46, 0.25); }
-    .ring .bar { stroke: #06202e; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+    .ring .track { stroke: var(--ink); opacity: 0.18; }
+    .ring .bar { stroke: var(--ink); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
     .anchor.holding .bar { stroke-dashoffset: 0; transition: stroke-dashoffset ${HOLD_SECONDS}s linear; }
-    .anchor.beat { animation: beat 0.35s ease-out; }
-    .count { position: relative; pointer-events: none; }
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); }
-        70% { box-shadow: 0 0 0 36px rgba(56, 189, 248, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    .count { position: relative; font-size: 3.5rem; font-weight: 700; pointer-events: none; }
+
+    @keyframes breathe {
+        0%, 100% { transform: scale(1); opacity: 0.34; }
+        50% { transform: scale(1.38); opacity: 0.1; }
+    }
+    @keyframes breathe-core {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.04); }
     }
     @keyframes beat {
-        0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-        100% { box-shadow: 0 0 0 28px rgba(255, 255, 255, 0); }
+        0% { transform: scale(1); opacity: 0.7; }
+        100% { transform: scale(1.4); opacity: 0; }
     }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
     @media (prefers-reduced-motion: reduce) {
-        .anchor, .anchor.beat { animation: none; }
+        .overlay, .stage, .halo, .disc, .beat-ring.go { animation: none; }
+        .halo-b { display: none; }
         .anchor.holding .bar { transition: none; }
+        button, button:hover, button:active { transition: none; transform: none; }
+    }
+    @media (max-width: 420px) {
+        .orb { width: 210px; height: 210px; }
     }
 `;
 
@@ -222,18 +292,21 @@ async function showOverlay(domain) {
     let anchorEl = null;
     let countEl = null;
     let hintEl = null;
+    let beatEl = null;
 
     function setHint(text) { if (hintEl) hintEl.textContent = text; }
 
     function resetAnchorUI() {
-        if (anchorEl) anchorEl.classList.remove('holding', 'beat');
+        if (anchorEl) anchorEl.classList.remove('holding');
+        if (beatEl) beatEl.classList.remove('go');
         if (countEl) countEl.textContent = HOLD_SECONDS;
     }
 
+    // One visible ripple per second (transform + opacity only)
     function beat() {
-        anchorEl.classList.remove('beat');
-        void anchorEl.offsetWidth; // restart the animation
-        anchorEl.classList.add('beat');
+        beatEl.classList.remove('go');
+        void beatEl.offsetWidth; // restart the animation
+        beatEl.classList.add('go');
     }
 
     function startHold() {
@@ -276,22 +349,31 @@ async function showOverlay(domain) {
 
     function renderAnchor() {
         overlay.innerHTML = `
-            <h1></h1>
-            <p></p>
-            <button type="button" class="anchor" aria-label="Hold for ${HOLD_SECONDS} seconds">
-                <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
-                    <circle class="track" cx="50" cy="50" r="46"></circle>
-                    <circle class="bar" cx="50" cy="50" r="46" pathLength="100"></circle>
-                </svg>
-                <span class="count">${HOLD_SECONDS}</span>
-            </button>
-            <p class="hint">Hold your finger on the anchor</p>
+            <div class="stage">
+                <h1></h1>
+                <p class="lead"></p>
+                <div class="orb">
+                    <span class="halo halo-a" aria-hidden="true"></span>
+                    <span class="halo halo-b" aria-hidden="true"></span>
+                    <span class="beat-ring" aria-hidden="true"></span>
+                    <button type="button" class="anchor" aria-label="Hold for ${HOLD_SECONDS} seconds">
+                        <span class="disc" aria-hidden="true"></span>
+                        <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
+                            <circle class="track" cx="50" cy="50" r="46"></circle>
+                            <circle class="bar" cx="50" cy="50" r="46" pathLength="100"></circle>
+                        </svg>
+                        <span class="count">${HOLD_SECONDS}</span>
+                    </button>
+                </div>
+                <p class="hint" role="status">Press and hold the circle</p>
+            </div>
         `;
         overlay.querySelector('h1').textContent = message.title;
-        overlay.querySelector('p').textContent = message.instruction;
+        overlay.querySelector('.lead').textContent = message.instruction;
         anchorEl = overlay.querySelector('.anchor');
         countEl = overlay.querySelector('.count');
         hintEl = overlay.querySelector('.hint');
+        beatEl = overlay.querySelector('.beat-ring');
 
         // Pointer events cover mouse, touch and pen with a single path (no double-firing)
         anchorEl.addEventListener('pointerdown', (e) => { e.preventDefault(); startHold(); });
@@ -309,17 +391,21 @@ async function showOverlay(domain) {
 
     // --- Step 2: grounding task + choices ---
     function renderChoice() {
-        anchorEl = countEl = hintEl = null;
+        anchorEl = countEl = hintEl = beatEl = null;
         overlay.innerHTML = `
-            <h1>Anchor locked.</h1>
-            <p>Try this if it feels right. Skipping is fine.</p>
-            <p class="task" aria-live="polite"></p>
-            <div class="actions">
-                <button type="button" class="secondary" id="reroll">Give me another</button>
-                <button type="button" class="primary" id="continue"></button>
-                <button type="button" class="link" id="close">Close this tab</button>
+            <div class="stage">
+                <h1>Anchor locked.</h1>
+                <p>Try this if it feels right. Skipping is fine.</p>
+                <p class="task" aria-live="polite"></p>
+                <div class="actions">
+                    <button type="button" class="secondary" id="reroll">Give me another</button>
+                    <button type="button" class="primary" id="continue"></button>
+                    <button type="button" class="link" id="close">Close this tab</button>
+                </div>
             </div>
         `;
+        // Keep keyboard focus inside the dialog, on the neutral option (not the one that leaves the pause)
+        overlay.querySelector('#reroll').focus();
         const taskEl = overlay.querySelector('.task');
         const showTask = () => { taskEl.textContent = GROUNDING_TASKS[pickFresh(GROUNDING_TASKS.length, 'task')]; };
         showTask();
