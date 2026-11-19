@@ -67,14 +67,18 @@
         <h2>Anchor locked. Stay with your body for a moment.</h2>
         <p>Try this if it feels right. Skipping is fine.</p>
 
-        <div class="action-suggestions">
-            <p id="grounding-task" aria-live="polite"></p>
+        <div class="task-card">
+            <p class="task-eyebrow">A small step</p>
+            <p id="grounding-task" class="task-text" aria-live="polite"></p>
+            <div id="task-extra"></div>
         </div>
+        <p id="unlock-note" class="unlock-note" role="status"></p>
 
         <button type="button" id="reroll-btn">Give me another</button>
         <button id="reset-btn">Done, thanks</button>
     </section>
 
+    <script src="pacer.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

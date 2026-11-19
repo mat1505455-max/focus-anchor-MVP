@@ -36,7 +36,7 @@ async function syncContentScripts() {
     await chrome.scripting.registerContentScripts([{
         id: SCRIPT_ID,
         matches,
-        js: ['data.js', 'content.js'],
+        js: ['data.js', 'pacer.js', 'content.js'],
         runAt: 'document_start',
         persistAcrossSessions: true
     }]);
@@ -64,9 +64,34 @@ chrome.storage.onChanged.addListener((changes, area) => {
 chrome.permissions.onAdded.addListener(scheduleSync);
 chrome.permissions.onRemoved.addListener(scheduleSync);
 
-// Content scripts can't reliably close their own tab, so they ask us
-chrome.runtime.onMessage.addListener((message, sender) => {
-    if (message && message.type === 'close-tab' && sender.tab && sender.tab.id !== undefined) {
+// Heebo is bundled in the extension. Content scripts ask us for the bytes (instead of fetching a
+// web-accessible resource) so the font can't be probed or blocked by a host page's CSP.
+let fontBase64 = null;
+async function getFontBase64() {
+    if (fontBase64) return fontBase64;
+    const response = await fetch(chrome.runtime.getURL('fonts/heebo-latin.woff2'));
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    fontBase64 = btoa(binary);
+    return fontBase64;
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (!message || !sender.tab) return; // only content scripts talk to us
+
+    // Content scripts can't reliably close their own tab, so they ask us
+    if (message.type === 'close-tab' && sender.tab.id !== undefined) {
         chrome.tabs.remove(sender.tab.id);
+        return;
+    }
+
+    if (message.type === 'get-font') {
+        getFontBase64()
+            .then((base64) => sendResponse({ base64 }))
+            .catch(() => sendResponse({ base64: null }));
+        return true; // keep the channel open for the async response
     }
 });

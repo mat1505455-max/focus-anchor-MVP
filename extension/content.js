@@ -134,6 +134,29 @@ function startMediaGuard() {
     };
 }
 
+// --- Font ------------------------------------------------------------------
+// Heebo ships inside the extension. The background script hands us the bytes and we register a
+// FontFace from memory, so there is no network request, no web-accessible resource to fingerprint,
+// and nothing for the host page's CSP to block. If anything fails we fall back to system fonts.
+
+let fontPromise = null;
+
+function loadFont() {
+    if (!fontPromise) {
+        fontPromise = (async () => {
+            try {
+                const response = await chrome.runtime.sendMessage({ type: 'get-font' });
+                if (!response || !response.base64) return;
+                const bytes = Uint8Array.from(atob(response.base64), (c) => c.charCodeAt(0));
+                const face = new FontFace('FocusAnchor Heebo', bytes.buffer, { weight: '100 900', display: 'swap' });
+                await face.load();
+                document.fonts.add(face);
+            } catch (e) { /* fall back to the system font stack */ }
+        })();
+    }
+    return fontPromise;
+}
+
 // --- Overlay ---------------------------------------------------------------
 
 const OVERLAY_CSS = `
@@ -159,7 +182,7 @@ const OVERLAY_CSS = `
         padding: 2rem 1.5rem; overflow-y: auto;
         background: radial-gradient(circle at 50% 38%, #FFFFFF 0%, var(--cream) 55%, var(--cream-deep) 100%);
         color: var(--ink);
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        font-family: 'FocusAnchor Heebo', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         text-align: center;
         -webkit-font-smoothing: antialiased;
         animation: fade-in 0.5s ease-out;
@@ -173,11 +196,33 @@ const OVERLAY_CSS = `
     p { margin: 0; font-size: 1.15rem; line-height: 1.7; color: var(--ink-soft); }
     .hint { min-height: 1.7em; font-size: 1rem; color: var(--ink); }
 
-    .task {
-        width: 100%; padding: 1.4rem 1.6rem;
-        font-size: 1.25rem; line-height: 1.6; color: var(--ink);
-        background: var(--cream-deep); border: 1.5px solid var(--sage-deep); border-radius: 20px;
+    [hidden] { display: none !important; }
+    .stage-wide { max-width: 40rem; }
+
+    /* Task card: the warm focal point of the screen */
+    .task-card {
+        width: 100%; padding: 2.25rem 2rem 2rem;
+        display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+        background: #F7EEDB; border: 1.5px solid var(--sage-deep); border-radius: 28px;
+        box-shadow: 0 10px 30px rgba(92, 110, 88, 0.14);
     }
+    .task-eyebrow { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+    .task-text { font-size: clamp(1.5rem, 4.2vw, 1.85rem); font-weight: 500; line-height: 1.45; color: var(--ink); }
+    .unlock-note { min-height: 1.7em; font-size: 1rem; color: var(--ink); }
+
+    /* Guided timer / breathing pacer. The circle moves with transform only. */
+    .pacer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+    .pacer-visual { position: relative; display: grid; place-items: center; width: 168px; height: 168px; }
+    .pacer-circle {
+        position: absolute; inset: 0; border-radius: 50%;
+        background: var(--sage); border: 2px solid var(--ink); will-change: transform;
+    }
+    .pacer-count { position: relative; font-size: 3.25rem; font-weight: 700; color: var(--ink); }
+    .pacer-phase { min-height: 1.6em; font-size: 1.4rem; font-weight: 600; color: var(--ink); }
+    .pacer-note { min-height: 1.5em; font-size: 0.95rem; color: var(--ink-soft); }
+    .pacer-bar { width: min(18rem, 100%); height: 8px; border-radius: 999px; background: rgba(31, 42, 36, 0.15); overflow: hidden; }
+    .pacer-bar-fill { display: block; width: 100%; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+    .pacer-start, .did-it { width: min(16rem, 100%); }
 
     /* Buttons: minimal, 48px+ targets, state changes use scale/opacity only */
     .actions { display: flex; flex-direction: column; gap: 0.75rem; width: min(22rem, 100%); margin-top: 0.5rem; }
@@ -251,6 +296,7 @@ const OVERLAY_CSS = `
         .halo-b { display: none; }
         .anchor.holding .bar { transition: none; }
         button, button:hover, button:active { transition: none; transform: none; }
+        .pacer-circle, .pacer-bar-fill { transition: none !important; }
     }
     @media (max-width: 420px) {
         .orb { width: 210px; height: 210px; }
@@ -279,7 +325,21 @@ async function showOverlay(domain) {
 
     const stopMediaGuard = startMediaGuard();
 
+    // Don't hold the overlay back for the font: wait briefly, then render with the fallback
+    await Promise.race([loadFont(), new Promise((resolve) => setTimeout(resolve, 400))]);
+
+    // Task UI state (pacer or "I did it" delay), cleaned up on reroll/dismiss
+    let pacer = null;
+    let didItTimer = null;
+
+    function clearTaskUI() {
+        if (pacer) { pacer.destroy(); pacer = null; }
+        clearInterval(didItTimer);
+        didItTimer = null;
+    }
+
     function dismiss() {
+        clearTaskUI();
         stopMediaGuard();
         stopHold(true);
         host.remove();
@@ -390,30 +450,89 @@ async function showOverlay(domain) {
     }
 
     // --- Step 2: grounding task + choices ---
+    // "Close this tab" and "Give me another" are always available. "Continue" stays hidden until
+    // the task is done: after the timer/pacer finishes, or after "I did it" (unlocked after a short pause).
+    const DID_IT_DELAY_SECONDS = 5;
+
     function renderChoice() {
         anchorEl = countEl = hintEl = beatEl = null;
         overlay.innerHTML = `
-            <div class="stage">
+            <div class="stage stage-wide">
                 <h1>Anchor locked.</h1>
                 <p>Try this if it feels right. Skipping is fine.</p>
-                <p class="task" aria-live="polite"></p>
+                <div class="task-card">
+                    <p class="task-eyebrow">A small step</p>
+                    <p class="task-text" aria-live="polite"></p>
+                    <div class="task-extra"></div>
+                </div>
+                <p class="unlock-note" role="status"></p>
                 <div class="actions">
                     <button type="button" class="primary" id="close">Close this tab</button>
                     <button type="button" class="secondary" id="reroll">Give me another</button>
-                    <button type="button" class="link" id="continue"></button>
+                    <button type="button" class="link" id="continue" hidden></button>
                 </div>
             </div>
         `;
         // Keep keyboard focus inside the dialog, never on "Continue"
         overlay.querySelector('#close').focus();
-        const taskEl = overlay.querySelector('.task');
-        const showTask = () => { taskEl.textContent = GROUNDING_TASKS[pickFresh(GROUNDING_TASKS.length, 'task')]; };
+
+        const taskEl = overlay.querySelector('.task-text');
+        const extraEl = overlay.querySelector('.task-extra');
+        const noteEl = overlay.querySelector('.unlock-note');
+        const continueBtn = overlay.querySelector('#continue');
+        continueBtn.textContent = `Continue to ${domain}`;
+
+        function unlock(message) {
+            continueBtn.hidden = false;
+            noteEl.textContent = message;
+            logEvent('task_completed', domain);
+        }
+
+        function mountDidIt() {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'primary did-it';
+            btn.disabled = true;
+            let left = DID_IT_DELAY_SECONDS;
+            btn.textContent = `I did it (${left})`;
+            extraEl.append(btn);
+
+            didItTimer = setInterval(() => {
+                left--;
+                if (left > 0) { btn.textContent = `I did it (${left})`; return; }
+                clearInterval(didItTimer);
+                didItTimer = null;
+                btn.textContent = 'I did it';
+                btn.disabled = false;
+            }, 1000);
+
+            btn.addEventListener('click', () => {
+                btn.hidden = true;
+                unlock('Nice. You can continue whenever you want.');
+            });
+        }
+
+        function showTask() {
+            clearTaskUI();
+            extraEl.replaceChildren();
+            continueBtn.hidden = true;
+            noteEl.textContent = '';
+
+            const task = normalizeTask(GROUNDING_TASKS[pickFresh(GROUNDING_TASKS.length, 'task')]);
+            taskEl.textContent = task.text;
+
+            if (taskKind(task) === 'plain') {
+                mountDidIt();
+            } else {
+                pacer = createPacer(task, { onDone: () => unlock('Well done. You can continue whenever you want.') });
+                extraEl.append(pacer.el);
+            }
+        }
         showTask();
 
-        overlay.querySelector('#continue').textContent = `Continue to ${domain}`;
         overlay.querySelector('#reroll').addEventListener('click', showTask);
 
-        overlay.querySelector('#continue').addEventListener('click', async () => {
+        continueBtn.addEventListener('click', async () => {
             await logEvent('continued', domain);
             await grantPass(domain);
             dismiss();

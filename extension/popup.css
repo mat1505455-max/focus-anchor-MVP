@@ -1,5 +1,13 @@
 /* Same design system as the overlay. Contrast on cream (#FDFBF7): ink 14:1, ink-soft 7:1, forest 10:1.
    Sage is only used as a fill next to an ink outline or text, never as the sole cue. */
+@font-face {
+    font-family: "Heebo";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("fonts/heebo-latin.woff2") format("woff2");
+}
+
 :root {
     color-scheme: light;
     --cream: #FDFBF7;
@@ -15,7 +23,7 @@
 body {
     width: 340px; margin: 0; padding: 1.25rem;
     background: var(--cream); color: var(--ink);
-    font: 14px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    font: 14px/1.6 "Heebo", system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 h1 { margin: 0 0 1rem; font-size: 1.3rem; font-weight: 600; letter-spacing: -0.01em; }
