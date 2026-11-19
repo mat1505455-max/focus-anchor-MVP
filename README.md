@@ -10,6 +10,7 @@ Live: https://mat1505455-max.github.io/focus-anchor-MVP/ (PWA) and `/landing/` (
 |---|---|
 | `index.html`, `styles.css`, `app.js`, `pacer.js` | The mobile PWA (plain HTML/CSS/JS, no build step) |
 | `extension/` | Chrome extension (Manifest V3) that shows the same anchor before sites on a blocklist |
+| iOS Shortcut | Apple Shortcut + App-Open automation that launches the PWA (see "iOS Shortcut" below) |
 | `landing/` | Landing page and privacy policy |
 | `fonts/` | Heebo (Latin subset), bundled locally. A copy lives in `extension/fonts/` |
 | `store/listing.md` | Chrome Web Store listing text and permission justifications (submission is on hold) |
@@ -42,6 +43,23 @@ Breath holds are gentle and always optional. Picks never repeat back-to-back (la
 - Data (name, blocklist, pause-free minutes, a capped local event log) lives in `chrome.storage.local` only.
 
 To try it: `chrome://extensions` -> Developer mode -> Load unpacked -> select `extension/`.
+
+## iOS Shortcut (app-open trigger)
+
+Safari can't intercept other apps, so on iPhone the PWA is paired with an Apple Shortcut that opens FocusAnchor when you launch a distracting app (Instagram, TikTok, etc.).
+
+**Setup**
+1. Install the pre-built "Focus Anchor" Shortcut from its iCloud link: https://www.icloud.com/shortcuts/c3f81e1d7e2348d088c7426d878a7f3b
+2. In the Shortcuts app -> Automation -> New Automation -> **App** -> pick the apps to interrupt -> **Is Opened**.
+3. Choose **Run Immediately** (so no confirmation banner appears), then select the "Focus Anchor" Shortcut.
+
+**Cooldown**
+- To avoid being interrupted on every launch, the Shortcut enforces a 10-minute cooldown between triggers.
+- On each run it reads a timestamp from `Shortcuts/focus_cooldown.txt` in iCloud Drive. If less than 10 minutes have passed, it exits silently; otherwise it opens the PWA and writes the new timestamp.
+- Optionally it can show a silent notification banner with the minutes of cooldown remaining.
+- Everything stays on your device and in your own iCloud Drive. There is no server, account or analytics, and the Shortcut contacts nothing but the PWA page itself.
+
+To change the cooldown, edit the time comparison in the Shortcut. Delete `focus_cooldown.txt` to reset it.
 
 ## Design system
 
