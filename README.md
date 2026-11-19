@@ -1,22 +1,55 @@
-# FocusAnchor (MVP) ⚓
+# FocusAnchor ⚓
 
-A bottom-up sensory intervention app that breaks dopamine loops, procrastination, and freeze responses during study sessions.
+A 5-second sensory anchor that interrupts automatic scrolling and "freeze" states, then offers a gentle grounding step. 100% on-device: no accounts, no backend, no analytics. Not a medical device and not a substitute for professional care.
 
-## 🎯 MVP Goal
-Build a lean mobile-first web app prototype that lets the user pick a tailored address persona and delivers a 5-second physiological anchor (touch, vibration, and visual feedback) to interrupt procrastination in real time.
+Live: https://mat1505455-max.github.io/focus-anchor-MVP/ (PWA) and `/landing/` (landing page + privacy policy). GitHub Pages deploys from `main` / root, so every push redeploys in 1-2 minutes.
 
-## 📱 App Flow (3 Screens)
-1. **Onboarding:** The user selects an address persona (Commander / Friend / Explorer). The choice is persisted in `localStorage`.
-2. **Intervention:** Displays persona-specific copy and a circular "anchor" target where the user places a finger.
-3. **Grounding:** The user holds the anchor for 5 seconds while a countdown runs and haptic feedback fires (Vibration API). On completion, a CTA button launches a micro-task.
+## What's in the repo
 
-## 🛠️ Tech Stack
-- HTML5 (semantic, minimal markup)
-- CSS3 (pulse keyframe animation, mobile-first responsive layout)
-- Vanilla JavaScript (screen state management, Web Vibration API)
+| Path | What it is |
+|---|---|
+| `index.html`, `styles.css`, `app.js`, `pacer.js` | The mobile PWA (plain HTML/CSS/JS, no build step) |
+| `extension/` | Chrome extension (Manifest V3) that shows the same anchor before sites on a blocklist |
+| `landing/` | Landing page and privacy policy |
+| `fonts/` | Heebo (Latin subset), bundled locally. A copy lives in `extension/fonts/` |
+| `store/listing.md` | Chrome Web Store listing text and permission justifications (submission is on hold) |
 
-## 🚀 Development Roadmap (Tranche 1)
-- [ ] Style the three screens in CSS and make them mobile-responsive.
-- [ ] Implement screen-switching logic and persist the selected persona in `localStorage`.
-- [ ] Integrate the countdown timer and haptic feedback (Web Vibration API).
-- [ ] Run an initial beta test with friends in real-world conditions.
+## PWA flow
+
+1. **Welcome** (first visit only): ask for a name, saved in `localStorage`. Returning users skip straight to the anchor.
+2. **Anchor:** warm message (3 rotating variants) and a hold-to-anchor circle. Hold 5 s with a progress ring, per-second visual beat, tones and vibration where supported. iOS has no Vibration API, so the visual beat and audio are the fallback.
+3. **Task card:** one of 61 grounding tasks. Timed and breathing tasks get an interactive pacer (phase text, countdown, progress bar). Plain tasks get an "I did it" button that unlocks after 5 s. "Give me another" rerolls. "Done, thanks" is always available.
+4. **Completion:** a rotating light-hearted message with a small offline SVG animation, and a quiet "Do another".
+
+## Task data
+
+`GROUNDING_TASKS` entries are plain strings, or objects with timer metadata (see `pacer.js`):
+
+```js
+{ text, durationSeconds }                                   // timed
+{ text, phases: [{ label, seconds, type, optional }], cycles }   // breathing pacer
+```
+
+Breath holds are gentle and always optional. Picks never repeat back-to-back (last pick persisted in `localStorage`).
+
+## Chrome extension
+
+- `host_permissions` cover a short starter list only. Other sites are added from the popup via `chrome.permissions.request` (optional host permissions), and a single dynamic content-script registration is kept in sync with the blocklist.
+- SPA navigation (e.g. YouTube) is detected inside the content script (Navigation API, `popstate`, `hashchange`, href poll), so no `webNavigation` permission.
+- While the overlay is open, page audio/video is paused and re-paused if it restarts.
+- "Continue to {site}" stays hidden until the task is done. "Close this tab" is always the primary action.
+- Heebo is delivered to the overlay as bytes from the background script and registered with `FontFace`, so no web-accessible resource and nothing for a host page's CSP to block.
+- Data (name, blocklist, pause-free minutes, a capped local event log) lives in `chrome.storage.local` only.
+
+To try it: `chrome://extensions` -> Developer mode -> Load unpacked -> select `extension/`.
+
+## Design system
+
+Cream `#FDFBF7`, sage `#8A9A86` (fill only), deep ink `#1F2A24`, forest `#2C4535`. Sage is ~2.9:1 on cream, so it is always paired with an ink outline or text, and states never rely on color alone. Animations use `transform`/`opacity` and respect `prefers-reduced-motion`.
+
+## Developing
+
+- Syntax check: `node --check app.js` (and the files in `extension/`).
+- `pacer.js` exists twice (root and `extension/`) and must stay identical. The task list is likewise duplicated in `app.js` and `extension/data.js`.
+- No automated tests yet. Verify in a browser (F12 device toolbar) and on a real iPhone; hard-refresh the live site to avoid cached copies.
+- Don't break the anchor's touch handling: `touch-action: none`, the `touchstart` `preventDefault`, and the `startGrounding` / `stopGrounding` guards.

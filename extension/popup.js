@@ -5,7 +5,6 @@ const els = {
     summary: document.getElementById('summary'),
     hours: document.getElementById('hours'),
     name: document.getElementById('name'),
-    persona: document.getElementById('persona'),
     passMinutes: document.getElementById('passMinutes'),
     blocklist: document.getElementById('blocklist'),
     save: document.getElementById('save'),
@@ -63,12 +62,11 @@ function showStatus(text) {
 }
 
 async function init() {
-    const { events = [], blocklist = [], name = '', persona = 'empathetic', passMinutes = 10 } =
-        await chrome.storage.local.get(['events', 'blocklist', 'name', 'persona', 'passMinutes']);
+    const { events = [], blocklist = [], name = '', passMinutes = 10 } =
+        await chrome.storage.local.get(['events', 'blocklist', 'name', 'passMinutes']);
 
     renderStats(events);
     els.name.value = name;
-    els.persona.value = persona;
     els.passMinutes.value = passMinutes;
     els.blocklist.value = blocklist.join('\n');
 }
@@ -88,7 +86,6 @@ els.save.addEventListener('click', async () => {
 
     await chrome.storage.local.set({
         name: els.name.value.trim(),
-        persona: els.persona.value,
         passMinutes: minutes,
         blocklist: domains
     });

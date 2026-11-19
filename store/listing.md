@@ -24,10 +24,7 @@ NOT A BLOCKER, A RESET
 No lockouts, no streak shame, no "wasted time" counters. FocusAnchor interrupts the loop, then you decide. Your weekly summary shows what you chose to do, never what you "failed" at.
 
 GENTLE, LOW-PRESSURE GROUNDING
-Steps like "find three blue objects", "press your feet into the floor" or "put the phone face down for a minute". Nothing asks you to close your eyes, hold your breath or revisit anything difficult. Don't like one? Tap "Give me another".
-
-YOUR VOICE
-Pick how the anchor talks to you: Friend (supportive), Commander (direct) or Researcher (calm, observational).
+Steps like "find three blue objects", "press your feet into the floor" or "put the phone face down for a minute". Nothing asks you to close your eyes or revisit anything difficult, and any breath holds are gentle and optional. Don't like one? Tap "Give me another".
 
 100% ON-DEVICE PRIVACY
 - No account, no servers, no analytics, no tracking.
@@ -43,7 +40,7 @@ FocusAnchor is a self-regulation tool. It is not a medical device and is not a s
 Show a short, calming pause screen with a 5-second hold-to-anchor interaction before the user continues on sites they chose to be interrupted on.
 
 ## Permission justifications (Developer Dashboard fields)
-- **storage**: Saves the user's name, voice, site list, pause-free time and a local event log (domain and timestamp) used for the user's own weekly summary. Nothing is transmitted.
+- **storage**: Saves the user's name, site list, pause-free time and a local event log (domain and timestamp) used for the user's own weekly summary. Nothing is transmitted.
 - **scripting**: Registers the pause-screen content script for the sites on the user's list, including sites the user adds later.
 - **Host permissions (youtube.com, instagram.com, reddit.com, tiktok.com, facebook.com, x.com, twitter.com)**: Required to show the pause screen on this starter list of common distraction sites.
 - **Optional host permissions (all sites)**: Requested at runtime only for a specific site the user adds to their list. Never requested for all sites at once.

@@ -66,7 +66,7 @@ function createPacer(task, { onDone } = {}) {
         <p class="pacer-phase" role="status" aria-live="polite">Ready when you are</p>
         <p class="pacer-note"></p>
         <div class="pacer-bar" aria-hidden="true"><span class="pacer-bar-fill"></span></div>
-        <button type="button" class="pacer-start primary">Start</button>
+        <button type="button" class="pacer-start secondary">Start</button>
     `;
 
     const circle = el.querySelector('.pacer-circle');

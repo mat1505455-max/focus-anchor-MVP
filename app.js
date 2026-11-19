@@ -3,11 +3,9 @@
 // ==========================================
 
 const STORAGE_KEYS = {
-    name: 'focus_anchor_user_name',
-    persona: 'focus_anchor_persona'
+    name: 'focus_anchor_user_name'
 };
 const DEFAULT_NAME = 'friend';
-const VALID_PERSONAS = ['commander', 'empathetic', 'analytical'];
 
 // localStorage can throw (private mode, blocked storage), so never let it break the app
 function readStorage(key) {
@@ -19,53 +17,41 @@ function writeStorage(key, value) {
 }
 
 let userName = readStorage(STORAGE_KEYS.name) || DEFAULT_NAME;
-const savedPersona = readStorage(STORAGE_KEYS.persona);
 
-// Persona messages: 3 variants each, rotated so the same one never shows twice in a row
-const getPersonaData = (name) => ({
-    commander: [
-        {
-            title: `${name}, stop scrolling.`,
-            instruction: "Put the phone down, take a breath, and come back to this room. Feel your feet."
-        },
-        {
-            title: `${name}, that's enough.`,
-            instruction: "The feed will still be there later. Exhale, sit up, and plant your feet on the floor."
-        },
-        {
-            title: `Eyes up, ${name}.`,
-            instruction: "You caught yourself. Now feel your body. One slow breath, then move."
-        }
-    ],
-    empathetic: [
-        {
-            title: `Hey ${name}, it's okay.`,
-            instruction: "It's completely natural that you escaped here. Let's take a breath together."
-        },
-        {
-            title: `Hey ${name}, I've got you.`,
-            instruction: "Getting stuck happens to everyone. Breathe out slowly, then we'll take one tiny step."
-        },
-        {
-            title: `No judgment, ${name}.`,
-            instruction: "You noticed, and that's the hard part. Let's ease back into your body together."
-        }
-    ],
-    analytical: [
-        {
-            title: "Dopamine loop interrupted.",
-            instruction: "Somatic grounding engaged. Your nervous system is already starting to settle."
-        },
-        {
-            title: "Nervous system regulation in progress.",
-            instruction: "Steady physical contact and a slow exhale help the body shift out of a stress response."
-        },
-        {
-            title: "Pattern noted: scroll-driven freeze.",
-            instruction: "Noticing it is the first regulation step. Next, one small sensory input to anchor you in the present."
-        }
-    ]
-});
+// Messages shown on the anchor screen: 3 variants, rotated so the same one never shows twice in a row
+const getMessages = (name) => [
+    {
+        title: `Hey ${name}, it's okay.`,
+        instruction: "It's completely natural that you escaped here. Let's take a breath together."
+    },
+    {
+        title: `Hey ${name}, I've got you.`,
+        instruction: "Getting stuck happens to everyone. Breathe out slowly, then we'll take one tiny step."
+    },
+    {
+        title: `No judgment, ${name}.`,
+        instruction: "You noticed, and that's the hard part. Let's ease back into your body together."
+    }
+];
+
+// Light-hearted sign-offs for the completion screen (rotated at random, never the same twice in a row)
+const COMPLETION_MESSAGES = [
+    "You just did something kind for your nervous system. Go enjoy the rest of your day.",
+    "Plot twist: you paused, and nothing exploded. Have a great day!",
+    "That's one tiny win in the bank. The feed can wait.",
+    "Your brain says thanks. Your thumbs say they were just getting started. Too bad!",
+    "Go be a person in the world for a bit. You've earned it.",
+    "Gold star. Invisible, but very shiny. Have a lovely day.",
+    "You've officially out-scrolled the scroll. Go do something delightful.",
+    "Deep breath, loose shoulders, soft jaw. Looking good out there.",
+    "The internet will survive without you for a while. Promise.",
+    "Today's forecast: slightly calmer, with a chance of snacks.",
+    "You showed up for yourself. That's the whole job. Have a great day!",
+    "Somewhere, a very proud little sprout is doing a happy dance for you.",
+    "Mission accomplished. Please enjoy your regularly scheduled life.",
+    "Small step, big vibes. See you next time, no pressure.",
+    "You can put the phone down now. Seriously. Go on."
+];
 
 // Screen 4 grounding tasks: sensory, physical, and zero-pressure transitions.
 // Deliberately no eyes-closed or recall prompts (trauma-informed). Any breath holds are gentle and optional.
@@ -159,14 +145,14 @@ function pickFresh(length, storageKey) {
 
 
 let appState = {
-    currentPersona: VALID_PERSONAS.includes(savedPersona) ? savedPersona : 'commander',
-    currentScreen: 'screen-onboarding',
+    currentScreen: 'screen-welcome',
     timerInterval: null
 };
 
 const PICK_KEYS = {
-    variantPrefix: 'focus_anchor_last_variant_',
-    task: 'focus_anchor_last_task'
+    variant: 'focus_anchor_last_variant',
+    task: 'focus_anchor_last_task',
+    completion: 'focus_anchor_last_completion'
 };
 
 // ==========================================
@@ -194,6 +180,15 @@ function navigateTo(screenId) {
     if (screenId === 'screen-action') {
         loadGroundingTask();
     }
+
+    if (screenId === 'screen-complete') {
+        loadCompletionMessage();
+    }
+}
+
+function loadCompletionMessage() {
+    const el = document.getElementById('complete-message');
+    if (el) el.textContent = COMPLETION_MESSAGES[pickFresh(COMPLETION_MESSAGES.length, PICK_KEYS.completion)];
 }
 
 // Task UI: a timer/pacer for timed and breathing tasks, or an "I did it" button (enabled after a
@@ -224,7 +219,7 @@ function loadGroundingTask() {
     if (taskKind(task) === 'plain') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'primary did-it';
+        btn.className = 'secondary did-it';
         btn.disabled = true;
         let left = DID_IT_DELAY_SECONDS;
         btn.textContent = `I did it (${left})`;
@@ -250,15 +245,15 @@ function loadGroundingTask() {
 }
 
 function loadInterventionText() {
-    const variants = getPersonaData(userName)[appState.currentPersona];
-    const personaData = variants[pickFresh(variants.length, PICK_KEYS.variantPrefix + appState.currentPersona)];
+    const variants = getMessages(userName);
+    const message = variants[pickFresh(variants.length, PICK_KEYS.variant)];
 
     const titleEl = document.getElementById('intervention-title');
     const descEl = document.getElementById('intervention-desc');
 
     if (titleEl && descEl) {
-        titleEl.textContent = personaData.title;
-        descEl.textContent = personaData.instruction;
+        titleEl.textContent = message.title;
+        descEl.textContent = message.instruction;
     }
 }
 
@@ -428,8 +423,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedName = readStorage(STORAGE_KEYS.name);
     if (savedName && nameInput) nameInput.value = savedName;
 
-    // Returning user: skip the welcome screen and go straight to persona selection
-    if (savedName) navigateTo('screen-onboarding');
+    // Returning user: skip the welcome screen and land straight on the anchor
+    if (savedName) navigateTo('screen-intervention');
 
     // Let the user go back and change the saved name
     const changeNameBtn = document.getElementById('change-name-btn');
@@ -458,49 +453,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             userName = name;
             writeStorage(STORAGE_KEYS.name, userName);
-            navigateTo('screen-onboarding');
-        });
-    }
-
-    // Screen 2: persona selection
-    const personaButtons = document.querySelectorAll('.btn-persona');
-
-    // Reflect the restored/default persona in the UI
-    personaButtons.forEach(btn => {
-        btn.classList.toggle('selected', btn.dataset.persona === appState.currentPersona);
-    });
-
-    personaButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            // currentTarget is always the button, even if it ever contains child elements
-            const chosen = e.currentTarget.dataset.persona;
-
-            // Store the selected persona in state and persist it
-            appState.currentPersona = chosen;
-            writeStorage(STORAGE_KEYS.persona, chosen);
-
-            // Highlight the selected button (styled in styles.css)
-            personaButtons.forEach(btn => btn.classList.remove('selected'));
-            e.currentTarget.classList.add('selected');
-
-            console.log(`Selected persona updated to: ${appState.currentPersona}`);
-        });
-    });
-
-    const startBtn = document.getElementById('start-btn');
-    if (startBtn) {
-        startBtn.addEventListener('click', () => {
-            // This click is a user gesture, so it can unlock audio for the hold on the next screen
+            // This submit is a user gesture, so it can unlock audio for the hold on the next screen
             unlockAudio();
-
-            console.log(`User ${userName} continuing to the intervention screen with persona ${appState.currentPersona}`);
-
-            // Move on to screen 2
             navigateTo('screen-intervention');
         });
     }
 
-    // Screen 2: touch listeners on the grounding anchor
+    // Anchor screen: touch listeners on the grounding anchor
     const touchAnchor = document.getElementById('touch-anchor');
     if (touchAnchor) {
         // Press start events (mouse and mobile)
@@ -521,12 +480,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const rerollBtn = document.getElementById('reroll-btn');
     if (rerollBtn) rerollBtn.addEventListener('click', loadGroundingTask);
 
-    // Screen 4: reset button
+    // Screen 4: "Done, thanks" leads to the completion screen
     const resetBtn = document.getElementById('reset-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            // Return to the first screen to allow a new focus round when needed
-            navigateTo('screen-onboarding');
-        });
-    }
+    if (resetBtn) resetBtn.addEventListener('click', () => navigateTo('screen-complete'));
+
+    // Completion screen: one more task, straight to a fresh task card
+    const againBtn = document.getElementById('again-btn');
+    if (againBtn) againBtn.addEventListener('click', () => navigateTo('screen-action'));
 });

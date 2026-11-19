@@ -306,10 +306,9 @@ const OVERLAY_CSS = `
 async function showOverlay(domain) {
     overlayOpen = true;
 
-    const { name, persona } = await chrome.storage.local.get(['name', 'persona']);
+    const { name } = await chrome.storage.local.get('name');
     const userName = (typeof name === 'string' && name.trim()) || DEFAULT_NAME;
-    const personaKey = VALID_PERSONAS.includes(persona) ? persona : DEFAULT_PERSONA;
-    const variants = getPersonaData(userName)[personaKey];
+    const variants = getMessages(userName);
     const message = variants[pickFresh(variants.length, 'variant')];
 
     const host = document.createElement('div');
@@ -491,7 +490,7 @@ async function showOverlay(domain) {
         function mountDidIt() {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'primary did-it';
+            btn.className = 'secondary did-it';
             btn.disabled = true;
             let left = DID_IT_DELAY_SECONDS;
             btn.textContent = `I did it (${left})`;

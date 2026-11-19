@@ -2,26 +2,13 @@
 // Mirrors the PWA's app.js content; keep the two in sync until they share a module.
 
 const DEFAULT_NAME = 'friend';
-const DEFAULT_PERSONA = 'empathetic';
-const VALID_PERSONAS = ['commander', 'empathetic', 'analytical'];
 
-const getPersonaData = (name) => ({
-    commander: [
-        { title: `${name}, stop scrolling.`, instruction: "Put the phone down, take a breath, and come back to this room. Feel your feet." },
-        { title: `${name}, that's enough.`, instruction: "The feed will still be there later. Exhale, sit up, and plant your feet on the floor." },
-        { title: `Eyes up, ${name}.`, instruction: "You caught yourself. Now feel your body. One slow breath, then move." }
-    ],
-    empathetic: [
-        { title: `Hey ${name}, it's okay.`, instruction: "It's completely natural that you escaped here. Let's take a breath together." },
-        { title: `Hey ${name}, I've got you.`, instruction: "Getting stuck happens to everyone. Breathe out slowly, then we'll take one tiny step." },
-        { title: `No judgment, ${name}.`, instruction: "You noticed, and that's the hard part. Let's ease back into your body together." }
-    ],
-    analytical: [
-        { title: "Dopamine loop interrupted.", instruction: "Somatic grounding engaged. Your nervous system is already starting to settle." },
-        { title: "Nervous system regulation in progress.", instruction: "Steady physical contact and a slow exhale help the body shift out of a stress response." },
-        { title: "Pattern noted: scroll-driven freeze.", instruction: "Noticing it is the first regulation step. Next, one small sensory input to anchor you in the present." }
-    ]
-});
+// Messages on the anchor screen (one warm "Friend" tone): 3 variants, never the same one twice in a row
+const getMessages = (name) => [
+    { title: `Hey ${name}, it's okay.`, instruction: "It's completely natural that you escaped here. Let's take a breath together." },
+    { title: `Hey ${name}, I've got you.`, instruction: "Getting stuck happens to everyone. Breathe out slowly, then we'll take one tiny step." },
+    { title: `No judgment, ${name}.`, instruction: "You noticed, and that's the hard part. Let's ease back into your body together." }
+];
 
 // Trauma-informed: no eyes-closed or recall prompts. Any breath holds are gentle and optional.
 // An entry is a plain string, or an object with timer metadata (see pacer.js):
